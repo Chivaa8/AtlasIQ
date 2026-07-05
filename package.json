@@ -2,8 +2,9 @@
   "name": "atlasiq",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "Planificador inteligente de viajes para portfolio.",
   "scripts": {
-    "test": "node frontend/test-recommendation.js"
+    "test": "node frontend/tests/run-tests.js && node backend/tests/password-reset.test.js"
   }
 }

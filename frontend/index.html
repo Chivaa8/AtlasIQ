@@ -12,7 +12,7 @@
         <div class="brand-panel">
           <strong>AtlasIQ</strong>
           <h1>Tu punto de partida cambia el viaje perfecto.</h1>
-          <p>AtlasIQ usa tu region de origen para recomendar destinos mas cercanos, realistas y ajustados a tus dias.</p>
+          <p>AtlasIQ usa tu región de origen para recomendar destinos más cercanos, realistas y ajustados a tus días.</p>
         </div>
 
         <section class="auth-card">
@@ -23,34 +23,19 @@
 
           <form id="loginForm" class="auth-form">
             <h2>Entrar</h2>
-            <label>
-              Email
-              <input name="email" type="email" autocomplete="email" required>
-            </label>
-            <label>
-              Contrasena
-              <input name="password" type="password" autocomplete="current-password" required>
-            </label>
+            <label>Email<input name="email" type="email" autocomplete="email" required></label>
+            <label>Contraseña<input name="password" type="password" autocomplete="current-password" required></label>
             <button type="submit">Entrar</button>
-            <button id="forgotBtn" class="link-button" type="button">Recordar contrasena</button>
+            <button id="forgotBtn" class="link-button" type="button">¿Has olvidado la contraseña?</button>
           </form>
 
           <form id="registerForm" class="auth-form hidden">
             <h2>Crear usuario</h2>
+            <label>Nombre<input name="name" autocomplete="name" required></label>
+            <label>Email<input name="email" type="email" autocomplete="email" required></label>
+            <label>Contraseña<input name="password" type="password" minlength="6" autocomplete="new-password" required></label>
             <label>
-              Nombre
-              <input name="name" autocomplete="name" required>
-            </label>
-            <label>
-              Email
-              <input name="email" type="email" autocomplete="email" required>
-            </label>
-            <label>
-              Contrasena
-              <input name="password" type="password" minlength="6" autocomplete="new-password" required>
-            </label>
-            <label>
-              De donde eres?
+              ¿De dónde eres?
               <select name="origin" required>
                 <option value="europe">Europa</option>
                 <option value="north-africa">Norte de Africa</option>
@@ -61,6 +46,23 @@
               </select>
             </label>
             <button type="submit">Crear cuenta</button>
+          </form>
+
+          <form id="forgotForm" class="auth-form hidden">
+            <h2>Recuperar acceso</h2>
+            <p class="form-note">Escribe el correo de tu cuenta. Si existe, enviaremos ahí un token de un solo uso.</p>
+            <label>Correo de la cuenta<input name="email" type="email" autocomplete="email" required></label>
+            <button type="submit">Enviar token</button>
+            <button class="link-button" data-auth-mode="login" type="button">Volver a entrar</button>
+          </form>
+
+          <form id="resetForm" class="auth-form hidden">
+            <h2>Nueva contraseña</h2>
+            <label>Correo de la cuenta<input name="email" type="email" autocomplete="email" required></label>
+            <label>Token<input name="token" autocomplete="one-time-code" required></label>
+            <label>Nueva contraseña<input name="password" type="password" minlength="6" autocomplete="new-password" required></label>
+            <button type="submit">Cambiar contraseña</button>
+            <button class="link-button" data-auth-mode="forgot" type="button">Pedir otro token</button>
           </form>
 
           <p id="authMessage" class="message" aria-live="polite"></p>
@@ -76,14 +78,46 @@
           <button id="logoutBtn" type="button">Salir</button>
         </header>
 
+        <section class="profile-panel">
+          <div class="profile-card">
+            <img id="profileAvatar" alt="Foto de usuario">
+            <div>
+              <p class="eyebrow">Perfil</p>
+              <h2 id="profileName">Completa tu perfil</h2>
+              <p id="profileMeta"></p>
+            </div>
+          </div>
+
+          <form id="profileForm" class="profile-form">
+            <input id="profilePhotoValue" name="photo" type="hidden">
+            <label>Foto usuario<input id="profilePhoto" name="photoFile" type="file" accept="image/*"></label>
+            <label>Nombre<input name="name" autocomplete="given-name" required></label>
+            <label>Primer apellido<input name="firstSurname" autocomplete="family-name" required></label>
+            <label>Segundo apellido<input name="secondSurname" autocomplete="additional-name"></label>
+            <label>DNI o pasaporte<input name="documentId" autocomplete="off" required></label>
+            <label>
+              Moneda
+              <select name="currency">
+                <option value="EUR">Euro</option>
+                <option value="USD">Dólar estadounidense</option>
+                <option value="GBP">Libra esterlina</option>
+                <option value="JPY">Yen japonés</option>
+                <option value="MXN">Peso mexicano</option>
+              </select>
+            </label>
+            <label>Correo<input name="email" type="email" autocomplete="email" required></label>
+            <label>Número de teléfono<input name="phone" type="tel" autocomplete="tel" placeholder="+34 600 000 000" required></label>
+            <label>Nueva contraseña<input name="password" type="password" autocomplete="new-password" placeholder="Dejar igual"></label>
+            <button type="submit">Guardar perfil</button>
+            <p id="profileMessage" class="message" aria-live="polite"></p>
+          </form>
+        </section>
+
         <section id="advisor" class="advisor">
           <section class="questionnaire">
-            <h2>Que tipo de viaje buscas?</h2>
+            <h2>¿Qué tipo de viaje buscas?</h2>
             <form id="tripForm">
-              <label>
-                Que buscas?
-                <input name="goal" value="descansar, comer bien y conocer sitios nuevos" required>
-              </label>
+              <label>¿Qué buscas?<input name="goal" value="descansar, comer bien y conocer sitios nuevos" required></label>
 
               <div class="grid-2">
                 <label>
@@ -102,7 +136,7 @@
                   <select name="landscape">
                     <option value="any">Ninguna preferencia</option>
                     <option value="beach">Playa</option>
-                    <option value="mountain">Montana</option>
+                    <option value="mountain">Montaña</option>
                   </select>
                 </label>
               </div>
@@ -127,14 +161,8 @@
               </div>
 
               <div class="grid-2">
-                <label>
-                  Dias
-                  <input name="days" type="number" min="2" max="45" value="5" required>
-                </label>
-                <label>
-                  Presupuesto total EUR
-                  <input name="budget" type="number" min="200" step="50" value="900" required>
-                </label>
+                <label>Días<input name="days" type="number" min="2" max="45" value="5" required></label>
+                <label>Presupuesto total EUR<input name="budget" type="number" min="200" step="50" value="900" required></label>
               </div>
 
               <button type="submit">Buscar destinos</button>
@@ -155,7 +183,6 @@
       </section>
     </main>
 
-    <script src="recommendation.js"></script>
-    <script src="app.js"></script>
+    <script type="module" src="src/app/main.js"></script>
   </body>
 </html>

@@ -1,0 +1,10 @@
+{
+  "name": "atlasiq-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/password-reset.test.js",
+    "dev": "node src/server.js"
+  }
+}

@@ -1,5 +1,5 @@
-const assert = require("node:assert/strict");
-const { recommendDestinations } = require("./recommendation");
+import assert from "node:assert/strict";
+import { recommendDestinations } from "../src/services/recommendation.js";
 
 const shortEuropeanTrip = recommendDestinations({
   goal: "playa y comida",
@@ -16,4 +16,4 @@ assert.ok(shortEuropeanTrip.length > 0);
 assert.ok(["europe", "africa"].includes(shortEuropeanTrip[0].continent));
 assert.ok(shortEuropeanTrip[0].estimatedCost <= 900 || shortEuropeanTrip[0].score < 100);
 
-console.log("AtlasIQ origin-aware recommendation check passed");
+console.log("AtlasIQ structured recommendation check passed");
