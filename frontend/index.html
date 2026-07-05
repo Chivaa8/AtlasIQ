@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AtlasIQ | Recomendador inteligente de viajes</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <section id="authView" class="auth-view">
+        <div class="brand-panel">
+          <strong>AtlasIQ</strong>
+          <h1>Tu punto de partida cambia el viaje perfecto.</h1>
+          <p>AtlasIQ usa tu region de origen para recomendar destinos mas cercanos, realistas y ajustados a tus dias.</p>
+        </div>
+
+        <section class="auth-card">
+          <div class="tabs" role="tablist" aria-label="Acceso">
+            <button id="loginTab" class="active" type="button">Entrar</button>
+            <button id="registerTab" type="button">Crear usuario</button>
+          </div>
+
+          <form id="loginForm" class="auth-form">
+            <h2>Entrar</h2>
+            <label>
+              Email
+              <input name="email" type="email" autocomplete="email" required>
+            </label>
+            <label>
+              Contrasena
+              <input name="password" type="password" autocomplete="current-password" required>
+            </label>
+            <button type="submit">Entrar</button>
+            <button id="forgotBtn" class="link-button" type="button">Recordar contrasena</button>
+          </form>
+
+          <form id="registerForm" class="auth-form hidden">
+            <h2>Crear usuario</h2>
+            <label>
+              Nombre
+              <input name="name" autocomplete="name" required>
+            </label>
+            <label>
+              Email
+              <input name="email" type="email" autocomplete="email" required>
+            </label>
+            <label>
+              Contrasena
+              <input name="password" type="password" minlength="6" autocomplete="new-password" required>
+            </label>
+            <label>
+              De donde eres?
+              <select name="origin" required>
+                <option value="europe">Europa</option>
+                <option value="north-africa">Norte de Africa</option>
+                <option value="north-america">Norteamerica</option>
+                <option value="latin-america">Latinoamerica</option>
+                <option value="asia">Asia</option>
+                <option value="oceania">Oceania</option>
+              </select>
+            </label>
+            <button type="submit">Crear cuenta</button>
+          </form>
+
+          <p id="authMessage" class="message" aria-live="polite"></p>
+        </section>
+      </section>
+
+      <section id="appView" class="app-view hidden">
+        <header class="topbar">
+          <div>
+            <strong>AtlasIQ</strong>
+            <p id="userSummary"></p>
+          </div>
+          <button id="logoutBtn" type="button">Salir</button>
+        </header>
+
+        <section id="advisor" class="advisor">
+          <section class="questionnaire">
+            <h2>Que tipo de viaje buscas?</h2>
+            <form id="tripForm">
+              <label>
+                Que buscas?
+                <input name="goal" value="descansar, comer bien y conocer sitios nuevos" required>
+              </label>
+
+              <div class="grid-2">
+                <label>
+                  Continente
+                  <select name="continent">
+                    <option value="any">Me da igual</option>
+                    <option value="asia">Asia</option>
+                    <option value="europe">Europa</option>
+                    <option value="america">America</option>
+                    <option value="africa">Africa</option>
+                    <option value="oceania">Oceania</option>
+                  </select>
+                </label>
+                <label>
+                  Paisaje
+                  <select name="landscape">
+                    <option value="any">Ninguna preferencia</option>
+                    <option value="beach">Playa</option>
+                    <option value="mountain">Montana</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="grid-2">
+                <label>
+                  Ambiente
+                  <select name="environment">
+                    <option value="any">Me da igual</option>
+                    <option value="city">Ciudad</option>
+                    <option value="countryside">Campo</option>
+                  </select>
+                </label>
+                <label>
+                  Plan
+                  <select name="vibe">
+                    <option value="any">Equilibrado</option>
+                    <option value="culture">Cultura</option>
+                    <option value="party">Fiesta</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="grid-2">
+                <label>
+                  Dias
+                  <input name="days" type="number" min="2" max="45" value="5" required>
+                </label>
+                <label>
+                  Presupuesto total EUR
+                  <input name="budget" type="number" min="200" step="50" value="900" required>
+                </label>
+              </div>
+
+              <button type="submit">Buscar destinos</button>
+            </form>
+          </section>
+
+          <section class="results-panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Resultados</p>
+                <h2 id="summary">Tus mejores opciones</h2>
+              </div>
+              <strong id="matchMetric">0 matches</strong>
+            </div>
+            <div id="results" class="results"></div>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <script src="recommendation.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

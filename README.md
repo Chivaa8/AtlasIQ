@@ -1,35 +1,35 @@
 # AtlasIQ
 
-Planificador inteligente de viajes para portfolio: itinerario, presupuesto, checklist, documentacion, clima, divisas y recomendacion de actividades.
+AtlasIQ es un planificador inteligente de viajes pensado como proyecto portfolio: itinerario, presupuesto, documentacion, clima, divisas y recomendaciones.
 
-## MVP actual
+## Estructura
 
-- Prototipo web estatico, sin instalacion.
-- Motor de recomendacion local con scoring por estilo, coste y tiempo.
-- Vista responsive con mapa conceptual, metricas e itinerario dia por dia.
-- Check runnable del recomendador.
+```text
+AtlasIQ/
+  frontend/   MVP web usable
+  backend/    API futura
+  ml/         recomendador futuro
+  infra/      Docker y despliegue
+  docs/       arquitectura y decisiones
+```
 
 ## Ejecutar
 
-Abre `index.html` en el navegador.
+Abre `frontend/index.html` en el navegador.
 
-Para comprobar la logica:
+## Checks
 
 ```bash
-node test-recommendation.js
+npm test
 ```
 
-## Roadmap portfolio
+## Roadmap corto
 
-1. Angular: convertir este prototipo en SPA con componentes.
-2. NestJS + PostgreSQL: viajes, usuarios, presupuestos, documentos y actividades.
-3. JWT: cuentas y viajes compartidos.
-4. Redis + WebSockets: colaboracion en tiempo real.
-5. APIs: Google Maps, Weather, Amadeus y divisas.
-6. IA/ML: sustituir el heuristic scorer por ranking entrenado con preferencias reales.
-7. Cloudinary: album de fotos del viaje.
-8. Docker + Swagger + tests: entrega profesional para reclutadores.
+1. Mejorar el MVP visual en `frontend/`.
+2. Migrar frontend a Angular cuando la interfaz este clara.
+3. Crear backend NestJS con viajes, usuarios, presupuesto e itinerario.
+4. Sustituir el recomendador heuristico por ML cuando haya datos.
 
-## Nota de alcance
+## Stack objetivo
 
-Este repo empieza por lo que un reclutador puede abrir y entender en segundos. Las integraciones reales entran cuando el producto base ya tenga flujo y datos.
+Angular, NestJS, PostgreSQL, Redis, Docker, JWT, WebSockets, Google Maps, Weather API, Amadeus API, Cloudinary, Swagger y tests.

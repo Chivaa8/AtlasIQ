@@ -1,0 +1,9 @@
+{
+  "name": "atlasiq",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Planificador inteligente de viajes para portfolio.",
+  "scripts": {
+    "test": "node frontend/test-recommendation.js"
+  }
+}
