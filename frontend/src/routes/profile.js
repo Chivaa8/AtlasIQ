@@ -4,6 +4,7 @@ import { currencies } from "../schemas/profile.js";
 import { labels } from "../schemas/user.js";
 import { saveProfile } from "../services/profile.js";
 import { renderRecommendations } from "./advisor.js";
+import { renderTrips } from "./trips.js";
 
 export function mountProfileRoute() {
   $("#profileForm").addEventListener("submit", submitProfile);
@@ -51,6 +52,7 @@ function submitProfile(event) {
   document.querySelector(".profile-panel").classList.add("hidden");
   $("#advisor").classList.remove("hidden");
   $("#appView").classList.remove("onboarding");
+  renderTrips();
   renderRecommendations();
 }
 

@@ -3,6 +3,8 @@ import { currentUser } from "../app/storage.js";
 import { labels } from "../schemas/user.js";
 import { parseTripPreferences } from "../schemas/trip-preferences.js";
 import { recommendDestinations } from "../services/recommendation.js";
+import { createTripFromDestination } from "../services/trips.js";
+import { renderTrips } from "./trips.js";
 
 const euro = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
 
@@ -12,6 +14,12 @@ export function mountAdvisorRoute() {
     renderRecommendations();
   });
   $("#tripForm").addEventListener("input", renderRecommendations);
+  $("#results").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-create-trip]");
+    if (!button) return;
+    createTripFromDestination(JSON.parse(button.dataset.createTrip));
+    renderTrips();
+  });
 }
 
 export function renderRecommendations() {
@@ -22,7 +30,7 @@ export function renderRecommendations() {
 
   $("#matchMetric").textContent = `${results.length} matches`;
   $("#summary").textContent = results.length
-    ? `Opciones desde ${labels[preferences.origin]} para ${preferences.days} dias`
+    ? `Opciones desde ${labels[preferences.origin]} para ${preferences.days} días`
     : "No hay destino claro con esos filtros";
   $("#results").innerHTML = results.length ? results.map(cardTemplate).join("") : emptyTemplate();
 }
@@ -40,7 +48,7 @@ function cardTemplate(destination) {
       </div>
       <dl>
         <div><dt>Coste estimado</dt><dd>${euro.format(destination.estimatedCost)}</dd></div>
-        <div><dt>Cercania</dt><dd>${destination.proximity}</dd></div>
+        <div><dt>Cercanía</dt><dd>${destination.proximity}</dd></div>
       </dl>
       <div class="tags">
         ${destination.landscape.map((tag) => `<span>${labels[tag]}</span>`).join("")}
@@ -48,6 +56,7 @@ function cardTemplate(destination) {
         ${destination.vibe.map((tag) => `<span>${labels[tag]}</span>`).join("")}
       </div>
       <p class="highlights">${destination.highlights.join(" · ")}</p>
+      <button type="button" data-create-trip='${JSON.stringify(destination)}'>Crear viaje</button>
     </article>
   `;
 }
@@ -56,7 +65,7 @@ function emptyTemplate() {
   return `
     <article class="empty">
       <h3>Prueba a subir presupuesto o abrir continente.</h3>
-      <p>AtlasIQ esta priorizando opciones realistas segun tu origen y dias.</p>
+      <p>AtlasIQ está priorizando opciones realistas según tu origen y días.</p>
     </article>
   `;
 }

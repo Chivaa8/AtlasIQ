@@ -4,6 +4,7 @@ import { isProfileComplete } from "../schemas/profile.js";
 import { currentUser, endSession, saveUsers, startSession, users } from "../app/storage.js";
 import { renderRecommendations } from "./advisor.js";
 import { renderProfile } from "./profile.js";
+import { renderTrips } from "./trips.js";
 import { requestPasswordReset, resetPassword } from "../services/password-reset.js";
 
 export function mountAuthRoute() {
@@ -34,7 +35,11 @@ export function showApp() {
   $("#appView").classList.toggle("onboarding", needsProfile);
   document.querySelector(".profile-panel").classList.toggle("hidden", !needsProfile);
   $("#advisor").classList.toggle("hidden", needsProfile);
-  if (!needsProfile) renderRecommendations();
+  $("#tripsPanel").classList.toggle("hidden", needsProfile);
+  if (!needsProfile) {
+    renderTrips();
+    renderRecommendations();
+  }
 }
 
 function showAuthMode(mode) {
