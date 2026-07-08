@@ -1,6 +1,7 @@
 import { $ } from "../app/dom.js";
 import { buildItinerary } from "../schemas/itinerary.js";
-import { addExpense, toggleChecklistItem, tripById } from "../services/trips.js";
+import { convertCurrency, tripSplit } from "../schemas/trip.js";
+import { addCompanion, addExpense, toggleChecklistItem, tripById } from "../services/trips.js";
 
 const euro = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
 let activeTripId = "";
@@ -26,6 +27,15 @@ export function mountTripDetailRoute() {
     event.currentTarget.reset();
     if (trip) showTripDetail(trip.id);
   });
+  $("#companionForm").addEventListener("submit", (event) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const trip = addCompanion(activeTripId, data.get("name"));
+    event.currentTarget.reset();
+    if (trip) showTripDetail(trip.id);
+  });
+  $("#currencyAmount").addEventListener("input", renderActiveConverter);
+  $("#currencyTarget").addEventListener("change", renderActiveConverter);
 }
 
 export function showTripDetail(id) {
@@ -48,19 +58,60 @@ export function showTripDetail(id) {
     </label>
   `).join("");
   renderExpenses(trip);
+  renderTravelTools(trip);
   $("#advisor").classList.add("hidden");
   $("#tripDetail").classList.remove("hidden");
 }
 
+function renderTravelTools(trip) {
+  const visa = trip.visa || {
+    status: "Revisa requisitos antes de viajar",
+    detail: "AtlasIQ todavía no tiene datos específicos para este destino.",
+    url: "https://www.exteriores.gob.es/es/ServiciosAlCiudadano/Paginas/Recomendaciones-de-viaje.aspx"
+  };
+  $("#visaStatus").textContent = visa.status;
+  $("#visaDetail").textContent = visa.detail;
+  $("#visaLink").href = visa.url;
+  $("#currencyAmount").value = trip.estimatedCost;
+  $("#currencyTarget").value = trip.currency || "EUR";
+  renderConverter(trip);
+}
+
+function renderActiveConverter() {
+  const trip = tripById(activeTripId);
+  if (trip) renderConverter(trip);
+}
+
+function renderConverter(trip) {
+  const amount = $("#currencyAmount").value || trip.estimatedCost;
+  const target = $("#currencyTarget").value || trip.currency || "EUR";
+  const converted = convertCurrency(amount, target);
+  $("#currencyResult").textContent = new Intl.NumberFormat("es-ES", {
+    style: "currency",
+    currency: target,
+    maximumFractionDigits: 0
+  }).format(converted);
+}
+
 function renderExpenses(trip) {
-  const spent = (trip.expenses || []).reduce((sum, expense) => sum + expense.amount, 0);
+  const expenses = trip.expenses || [];
+  const companions = trip.companions || [];
+  const { spent, people, perPerson } = tripSplit(trip);
   $("#expenseSummary").textContent = `${euro.format(spent)} gastados · ${euro.format(trip.estimatedCost - spent)} restantes`;
-  $("#expenseList").innerHTML = (trip.expenses || []).length
-    ? trip.expenses.map((expense) => `
+  $("#splitSummary").textContent = `${people} ${people === 1 ? "persona" : "personas"} · ${euro.format(perPerson)} por persona`;
+  $("#expenseList").innerHTML = expenses.length
+    ? expenses.map((expense) => `
       <div class="expense-row">
         <span>${expense.concept}</span>
         <strong>${euro.format(expense.amount)}</strong>
       </div>
     `).join("")
     : `<p class="muted">Aún no hay gastos.</p>`;
+  $("#companionList").innerHTML = companions.length
+    ? companions.map((companion) => `
+      <div class="companion-row">
+        <span>${companion.name}</span>
+      </div>
+    `).join("")
+    : `<p class="muted">Solo tú de momento.</p>`;
 }

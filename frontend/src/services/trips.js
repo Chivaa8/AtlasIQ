@@ -49,6 +49,24 @@ export function addExpense(tripId, expense) {
   return tripById(tripId);
 }
 
+export function addCompanion(tripId, name) {
+  const cleanName = String(name || "").trim();
+  if (!cleanName) return tripById(tripId);
+
+  const trips = allTrips().map((trip) => {
+    if (trip.id !== tripId) return trip;
+    return {
+      ...trip,
+      companions: [
+        ...(trip.companions || []),
+        { id: crypto.randomUUID(), name: cleanName }
+      ]
+    };
+  });
+  localStorage.setItem(tripsKey, JSON.stringify(trips));
+  return tripById(tripId);
+}
+
 function allTrips() {
   return JSON.parse(localStorage.getItem(tripsKey) || "[]");
 }

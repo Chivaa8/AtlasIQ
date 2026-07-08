@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { createTrip } from "../src/schemas/trip.js";
+import { convertCurrency, createTrip, tripSplit } from "../src/schemas/trip.js";
 
 const trip = createTrip({
   name: "Portugal",
@@ -13,6 +13,15 @@ assert.equal(trip.userEmail, "user@example.com");
 assert.equal(trip.name, "Portugal");
 assert.equal(trip.checklist.length, 5);
 assert.equal(trip.checklist[0].done, false);
+assert.deepEqual(trip.companions, []);
 assert.deepEqual(trip.expenses, []);
+
+const split = tripSplit({
+  expenses: [{ amount: 90 }, { amount: 60 }],
+  companions: [{ name: "Ana" }, { name: "Luis" }]
+});
+
+assert.deepEqual(split, { spent: 150, people: 3, perPerson: 50 });
+assert.equal(convertCurrency(100, "JPY"), 16900);
 
 console.log("AtlasIQ trip creation check passed");

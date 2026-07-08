@@ -101,6 +101,34 @@
             <div>
               <h3 id="tripDetailCity"></h3>
               <p id="tripDetailBudget"></p>
+              <div id="travelTools" class="travel-tools">
+                <section class="travel-tool">
+                  <h3>Visado</h3>
+                  <strong id="visaStatus"></strong>
+                  <p id="visaDetail"></p>
+                  <a id="visaLink" target="_blank" rel="noreferrer">Abrir trámite oficial</a>
+                </section>
+                <section class="travel-tool">
+                  <h3>Conversor</h3>
+                  <div class="converter-grid">
+                    <input id="currencyAmount" type="number" min="0" step="1" aria-label="Importe en euros">
+                    <select id="currencyTarget" aria-label="Moneda de destino">
+                      <option value="EUR">EUR</option>
+                      <option value="USD">USD</option>
+                      <option value="GBP">GBP</option>
+                      <option value="JPY">JPY</option>
+                      <option value="MXN">MXN</option>
+                      <option value="MAD">MAD</option>
+                      <option value="ISK">ISK</option>
+                      <option value="CRC">CRC</option>
+                      <option value="IDR">IDR</option>
+                      <option value="NZD">NZD</option>
+                    </select>
+                  </div>
+                  <strong id="currencyResult"></strong>
+                  <p class="muted">Cambio orientativo.</p>
+                </section>
+              </div>
             </div>
             <ol id="tripItinerary" class="itinerary-list"></ol>
             <div>
@@ -118,6 +146,17 @@
                 <button type="submit">Añadir</button>
               </form>
               <div id="expenseList" class="expense-list"></div>
+              <div class="split-box">
+                <div>
+                  <h3>Reparto</h3>
+                  <p id="splitSummary"></p>
+                </div>
+                <form id="companionForm" class="companion-form">
+                  <input name="name" placeholder="Nombre del compañero" required>
+                  <button type="submit">Añadir</button>
+                </form>
+                <div id="companionList" class="companion-list"></div>
+              </div>
             </section>
           </div>
         </section>

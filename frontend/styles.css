@@ -321,6 +321,40 @@ dd {
   color: var(--muted);
 }
 
+.travel-tools {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.travel-tool {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.travel-tool h3 {
+  font-size: 18px;
+}
+
+.travel-tool p {
+  margin-bottom: 0;
+  color: var(--muted);
+}
+
+.travel-tool a {
+  color: var(--brand);
+  font-weight: 800;
+}
+
+.converter-grid {
+  display: grid;
+  grid-template-columns: 1fr 90px;
+  gap: 8px;
+}
+
 .trip-actions {
   display: grid;
   gap: 8px;
@@ -374,6 +408,23 @@ dd {
   gap: 8px;
 }
 
+.split-box,
+.companion-list {
+  display: grid;
+  gap: 8px;
+}
+
+.split-box {
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.companion-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
 .expense-row {
   display: flex;
   justify-content: space-between;
@@ -381,6 +432,13 @@ dd {
   padding: 10px 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
+}
+
+.companion-row {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-weight: 800;
 }
 
 .muted {

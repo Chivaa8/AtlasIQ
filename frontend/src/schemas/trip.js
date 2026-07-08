@@ -6,11 +6,25 @@ export function createTrip(destination, userEmail) {
     city: destination.city,
     continent: destination.continent,
     estimatedCost: destination.estimatedCost,
+    currency: destination.currency || "EUR",
+    visa: destination.visa || null,
     highlights: destination.highlights || [],
     checklist: defaultChecklist(),
+    companions: [],
     expenses: [],
     createdAt: new Date().toISOString()
   };
+}
+
+export function tripSplit(trip) {
+  const spent = (trip.expenses || []).reduce((sum, expense) => sum + expense.amount, 0);
+  const people = (trip.companions || []).length + 1;
+  return { spent, people, perPerson: spent / people };
+}
+
+export function convertCurrency(amount, toCurrency, fromCurrency = "EUR") {
+  const rates = { EUR: 1, USD: 1.09, GBP: 0.86, JPY: 169, MXN: 20.3, MAD: 10.8, ISK: 151, CRC: 560, IDR: 17800, NZD: 1.82 };
+  return (Number(amount) || 0) / (rates[fromCurrency] || 1) * (rates[toCurrency] || 1);
 }
 
 function defaultChecklist() {
