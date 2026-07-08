@@ -287,6 +287,106 @@ dd {
   box-shadow: var(--shadow);
 }
 
+.trip-detail {
+  margin: 24px clamp(16px, 5vw, 64px) 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.trip-detail-body {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr) 260px 280px;
+  gap: 20px;
+  padding: 20px;
+}
+
+.itinerary-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding-left: 22px;
+}
+
+.itinerary-list li {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.itinerary-list p {
+  margin-bottom: 0;
+  color: var(--muted);
+}
+
+.trip-actions {
+  display: grid;
+  gap: 8px;
+  justify-items: end;
+}
+
+.checklist {
+  display: grid;
+  gap: 10px;
+  align-self: start;
+}
+
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.check-item input {
+  width: auto;
+  min-height: auto;
+}
+
+.expenses {
+  display: grid;
+  gap: 12px;
+  align-self: start;
+}
+
+.expenses p {
+  color: var(--muted);
+}
+
+.expense-form {
+  display: grid;
+  grid-template-columns: 1fr 90px;
+  gap: 8px;
+}
+
+.expense-form button {
+  grid-column: 1 / -1;
+}
+
+.expense-list {
+  display: grid;
+  gap: 8px;
+}
+
+.expense-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
 .trip-list {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -346,7 +446,7 @@ dd {
 }
 
 @media (max-width: 940px) {
-  .auth-view, .advisor, .results, .grid-2, .trip-list {
+  .auth-view, .advisor, .results, .grid-2, .trip-list, .trip-detail-body {
     grid-template-columns: 1fr;
   }
 

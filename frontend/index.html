@@ -89,6 +89,39 @@
           <div id="tripList" class="trip-list"></div>
         </section>
 
+        <section id="tripDetail" class="trip-detail hidden">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Viaje</p>
+              <h2 id="tripDetailTitle"></h2>
+            </div>
+            <button id="closeTripDetailBtn" type="button">Volver</button>
+          </div>
+          <div class="trip-detail-body">
+            <div>
+              <h3 id="tripDetailCity"></h3>
+              <p id="tripDetailBudget"></p>
+            </div>
+            <ol id="tripItinerary" class="itinerary-list"></ol>
+            <div>
+              <h3>Checklist</h3>
+              <div id="tripChecklist" class="checklist"></div>
+            </div>
+            <section class="expenses">
+              <div>
+                <h3>Gastos</h3>
+                <p id="expenseSummary"></p>
+              </div>
+              <form id="expenseForm" class="expense-form">
+                <input name="concept" placeholder="Concepto" required>
+                <input name="amount" type="number" min="1" step="1" placeholder="€" required>
+                <button type="submit">Añadir</button>
+              </form>
+              <div id="expenseList" class="expense-list"></div>
+            </section>
+          </div>
+        </section>
+
         <section class="profile-panel">
           <div class="profile-card">
             <img id="profileAvatar" alt="Foto de usuario">
