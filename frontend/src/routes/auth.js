@@ -1,11 +1,13 @@
 import { $ } from "../app/dom.js";
-import { labels, validateUser } from "../schemas/user.js";
+import { currentUser, endSession, saveSession } from "../app/storage.js";
+import { showPage } from "../app/pages.js";
 import { isProfileComplete } from "../schemas/profile.js";
-import { currentUser, endSession, saveUsers, startSession, users } from "../app/storage.js";
-import { renderRecommendations } from "./advisor.js";
+import { labels, validateUser } from "../schemas/user.js";
+import { loginUser, registerUser } from "../services/auth-api.js";
+import { requestPasswordReset, resetPassword } from "../services/password-reset.js";
+import { renderRecommendations } from "./advisor.js?v=20260709-asia-real";
 import { renderProfile } from "./profile.js";
 import { renderTrips } from "./trips.js";
-import { requestPasswordReset, resetPassword } from "../services/password-reset.js";
 
 export function mountAuthRoute() {
   $("#loginTab").addEventListener("click", () => showAuthMode("login"));
@@ -30,16 +32,21 @@ export function showApp() {
   $("#appView").classList.toggle("hidden", !user);
   if (!user) return;
   $("#userSummary").textContent = `${user.name} - origen: ${labels[user.origin]}`;
+  $("#accountName").textContent = user.name || "Mi cuenta";
+  $("#accountEmail").textContent = user.email || "";
+  $("#accountAvatar").src = user.photo || defaultAvatar();
   renderProfile();
   const needsProfile = !isProfileComplete(user);
   $("#appView").classList.toggle("onboarding", needsProfile);
-  document.querySelector(".profile-panel").classList.toggle("hidden", !needsProfile);
-  $("#advisor").classList.toggle("hidden", needsProfile);
-  $("#tripsPanel").classList.toggle("hidden", needsProfile);
+  showPage(needsProfile ? "profilePanel" : "homeDashboard");
   if (!needsProfile) {
     renderTrips();
     renderRecommendations();
   }
+}
+
+function defaultAvatar() {
+  return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' rx='48' fill='%23edf4f1'/%3E%3Ccircle cx='48' cy='36' r='18' fill='%230c7168'/%3E%3Cpath d='M20 84c5-22 19-34 28-34s23 12 28 34' fill='%230c7168'/%3E%3C/svg%3E";
 }
 
 function showAuthMode(mode) {
@@ -51,11 +58,10 @@ function showAuthMode(mode) {
   showMessage("");
 }
 
-function register(event) {
+async function register(event) {
   event.preventDefault();
   const data = new FormData(event.currentTarget);
   const nextUser = {
-    id: crypto.randomUUID(),
     name: data.get("name").trim(),
     email: data.get("email").trim().toLowerCase(),
     password: data.get("password"),
@@ -63,21 +69,22 @@ function register(event) {
     currency: "EUR"
   };
   const error = validateUser(nextUser);
-  if (error) return showMessage(error);
-  if (users().some((user) => user.email === nextUser.email)) return showMessage("Ese email ya esta registrado.");
-
-  saveUsers([...users(), nextUser]);
-  startSession(nextUser.email);
+  if (error) return showMessage(error, "error");
+  const result = await registerUser(nextUser);
+  if (result.error) return showMessage(normalizeAuthError(result.error), "error");
+  saveSession(result.session);
   showApp();
 }
 
-function login(event) {
+async function login(event) {
   event.preventDefault();
   const data = new FormData(event.currentTarget);
-  const email = data.get("email").trim().toLowerCase();
-  const user = users().find((item) => item.email === email && item.password === data.get("password"));
-  if (!user) return showMessage("Correo o contraseña incorrectos.");
-  startSession(user.email);
+  const result = await loginUser({
+    email: data.get("email").trim().toLowerCase(),
+    password: data.get("password")
+  });
+  if (result.error) return showMessage(normalizeAuthError(result.error), "error");
+  saveSession(result.session);
   showApp();
 }
 
@@ -85,10 +92,10 @@ async function requestReset(event) {
   event.preventDefault();
   const email = new FormData(event.currentTarget).get("email").trim().toLowerCase();
   const error = await requestPasswordReset(email);
-  if (error) return showMessage(error);
+  if (error) return showMessage(error, "error");
   $("#resetForm").elements.email.value = email;
   showAuthMode("reset");
-  showMessage("Si el correo pertenece a una cuenta, recibirás un token ahí.");
+  showMessage("Si el correo pertenece a una cuenta, recibirás un token ahí.", "success");
 }
 
 async function submitReset(event) {
@@ -99,11 +106,25 @@ async function submitReset(event) {
     token: data.get("token").trim(),
     password: data.get("password")
   });
-  if (error) return showMessage(error);
+  if (error) return showMessage(error, "error");
   showAuthMode("login");
-  showMessage("Contraseña actualizada. Ya puedes entrar.");
+  showMessage("Contraseña actualizada. Ya puedes entrar.", "success");
 }
 
-function showMessage(text) {
-  $("#authMessage").textContent = text;
+function showMessage(text, type = "") {
+  const message = $("#authMessage");
+  message.textContent = text;
+  message.classList.toggle("error", type === "error");
+  message.classList.toggle("success", type === "success");
+}
+
+function normalizeAuthError(error) {
+  const messages = {
+    "email already registered": "Ese email ya está registrado.",
+    "invalid credentials": "Correo o contraseña incorrectos.",
+    "email is invalid": "Correo inválido.",
+    "password must have 6 characters": "La contraseña debe tener al menos 6 caracteres.",
+    "origin is required": "Selecciona tu origen."
+  };
+  return messages[error] || error;
 }

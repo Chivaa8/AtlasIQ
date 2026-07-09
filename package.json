@@ -5,6 +5,8 @@
   "type": "module",
   "description": "Planificador inteligente de viajes para portfolio.",
   "scripts": {
-    "test": "node frontend/tests/run-tests.js && node backend/tests/password-reset.test.js"
+    "dev:backend": "node backend/src/server.js",
+    "dev:frontend": "python -m http.server 8022 -d frontend",
+    "test": "node frontend/tests/run-tests.js && node backend/tests/password-reset.test.js && node backend/tests/trips.test.js && node backend/tests/auth.test.js && node backend/tests/http.test.js"
   }
 }

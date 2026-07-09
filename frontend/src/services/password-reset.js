@@ -1,6 +1,7 @@
 import { saveUsers, users } from "../app/storage.js";
+import { apiBaseUrl } from "../app/config.js";
 
-const passwordResetEndpoint = "http://127.0.0.1:8023/api/password-reset";
+const passwordResetEndpoint = `${apiBaseUrl}/password-reset`;
 
 export async function requestPasswordReset(email) {
   const user = users().find((item) => item.email === email);

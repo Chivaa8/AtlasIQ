@@ -13,6 +13,11 @@
           <strong>AtlasIQ</strong>
           <h1>Tu punto de partida cambia el viaje perfecto.</h1>
           <p>AtlasIQ usa tu región de origen para recomendar destinos más cercanos, realistas y ajustados a tus días.</p>
+          <div class="brand-metrics" aria-label="Resumen de AtlasIQ">
+            <div><strong>9</strong><span>destinos base</span></div>
+            <div><strong>3</strong><span>planes por viaje</span></div>
+            <div><strong>24 h</strong><span>itinerario vivo</span></div>
+          </div>
         </div>
 
         <section class="auth-card">
@@ -75,10 +80,172 @@
             <strong>AtlasIQ</strong>
             <p id="userSummary"></p>
           </div>
-          <button id="logoutBtn" type="button">Salir</button>
+          <nav class="app-nav" aria-label="Navegación principal">
+            <button class="link-button active" type="button" data-page-target="homeDashboard">Inicio</button>
+            <button class="link-button" type="button" data-page-target="tripsPanel">Viajes</button>
+            <button class="link-button" type="button" data-page-target="advisor">Planificador</button>
+            <button class="link-button" type="button" data-page-target="cruisesPanel">Cruceros</button>
+            <button class="link-button" type="button" data-page-target="paymentsPanel">Pagos</button>
+          </nav>
+          <div class="topbar-actions">
+            <details class="account-menu">
+              <summary>
+                <img id="accountAvatar" alt="Foto de la cuenta">
+                <span>
+                  <strong id="accountName">Mi cuenta</strong>
+                  <small id="accountEmail"></small>
+                </span>
+              </summary>
+              <div class="account-dropdown">
+                <button class="link-button" type="button" data-page-target="profilePanel">Ver perfil</button>
+                <button class="link-button" type="button" data-page-target="paymentsPanel">Pagos</button>
+                <button id="logoutBtn" type="button">Cerrar sesión</button>
+              </div>
+            </details>
+          </div>
         </header>
 
-        <section id="tripsPanel" class="trips-panel hidden">
+        <section id="homeDashboard" class="home-dashboard app-page hidden">
+          <div class="home-hero home-carousel">
+            <div class="carousel-track" aria-hidden="true">
+              <span style="background-image: url('https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1400&q=80')"></span>
+              <span style="background-image: url('https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?auto=format&fit=crop&w=1400&q=80')"></span>
+              <span style="background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1400&q=80')"></span>
+              <span style="background-image: url('https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=1400&q=80')"></span>
+            </div>
+            <div class="home-hero-content">
+              <p class="eyebrow">Inicio</p>
+              <h2>Tu próximo viaje empieza aquí.</h2>
+              <p id="homeInsight">Busca un destino y AtlasIQ preparará una ruta con presupuesto, checklist y documentación.</p>
+            </div>
+          </div>
+          <div class="quick-actions" aria-label="Acciones rápidas">
+            <button type="button" data-page-target="advisor">Buscar destinos</button>
+            <button class="link-button" type="button" data-page-target="tripsPanel">Ver viajes</button>
+            <button class="link-button" type="button" data-page-target="paymentsPanel">Pagos</button>
+          </div>
+          <div class="home-stats">
+            <div><strong id="homeTripCount">0</strong><span>Viajes activos</span></div>
+            <div><strong id="homeBudget">0 €</strong><span>Presupuesto previsto</span></div>
+            <div><strong id="homeDocs">0</strong><span>Documentos listos</span></div>
+          </div>
+          <section class="top-destinations">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Inspiración</p>
+                <h2>Top 10 viajes</h2>
+              </div>
+              <button class="link-button" type="button" data-page-target="advisor">Crear ruta</button>
+            </div>
+            <div class="destination-strip">
+              <article style="background-image: url('https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=900&q=80')"><span>01</span><strong>Japón</strong><small>Templos, ramen y tren bala</small></article>
+              <article style="background-image: url('https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=900&q=80')"><span>02</span><strong>Bali</strong><small>Playas, arrozales y calma</small></article>
+              <article style="background-image: url('https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=900&q=80')"><span>03</span><strong>Italia</strong><small>Ruta cultural y gastronómica</small></article>
+              <article style="background-image: url('https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=900&q=80')"><span>04</span><strong>Dubái</strong><small>Ciudad, desierto y lujo</small></article>
+              <article style="background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=80')"><span>05</span><strong>Costa Rica</strong><small>Naturaleza y aventura</small></article>
+              <article style="background-image: url('https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=900&q=80')"><span>06</span><strong>Islandia</strong><small>Cascadas y auroras</small></article>
+              <article style="background-image: url('https://images.unsplash.com/photo-1505761671935-60b3a7427bad?auto=format&fit=crop&w=900&q=80')"><span>07</span><strong>Londres</strong><small>Escapada urbana completa</small></article>
+              <article style="background-image: url('https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=900&q=80')"><span>08</span><strong>Roma</strong><small>Historia en cada calle</small></article>
+              <article style="background-image: url('https://images.unsplash.com/photo-1489749798305-4fea3ae63d43?auto=format&fit=crop&w=900&q=80')"><span>09</span><strong>Marruecos</strong><small>Zocos, desierto y cultura</small></article>
+              <article style="background-image: url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80')"><span>10</span><strong>Nueva Zelanda</strong><small>Carretera y paisajes enormes</small></article>
+            </div>
+          </section>
+          <section class="circuits-section">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Rutas combinadas</p>
+                <h2>Circuitos de viaje</h2>
+              </div>
+              <strong>2, 3 y 4 países</strong>
+            </div>
+            <div class="circuits-grid">
+              <article class="circuit-card">
+                <span>2 países</span>
+                <h3>Portugal + Marruecos</h3>
+                <p>Lisboa, Algarve, Marrakech y Essaouira en una ruta cercana, cultural y con playa.</p>
+                <strong>8-10 días</strong>
+              </article>
+              <article class="circuit-card">
+                <span>2 países</span>
+                <h3>Japón + Corea del Sur</h3>
+                <p>Tokio, Kioto, Seúl y Busan para mezclar templos, gastronomía, trenes y ciudades enormes.</p>
+                <strong>12-15 días</strong>
+              </article>
+              <article class="circuit-card">
+                <span>3 países</span>
+                <h3>Francia + Bélgica + Países Bajos</h3>
+                <p>París, Bruselas, Brujas, Ámsterdam y Utrecht con trenes rápidos y ciudades muy conectadas.</p>
+                <strong>7-10 días</strong>
+              </article>
+              <article class="circuit-card">
+                <span>3 países</span>
+                <h3>Tailandia + Camboya + Vietnam</h3>
+                <p>Bangkok, Angkor, Hanói, Hoi An y bahía de Ha Long para una ruta potente por el sudeste asiático.</p>
+                <strong>14-18 días</strong>
+              </article>
+              <article class="circuit-card">
+                <span>4 países</span>
+                <h3>Italia + Austria + Chequia + Hungría</h3>
+                <p>Roma, Viena, Praga y Budapest para una ruta europea de tren, historia, comida y arquitectura.</p>
+                <strong>12-16 días</strong>
+              </article>
+              <article class="circuit-card">
+                <span>4 países</span>
+                <h3>Argentina + Chile + Perú + Colombia</h3>
+                <p>Buenos Aires, Patagonia, Machu Picchu y Cartagena para una aventura larga por Sudamérica.</p>
+                <strong>18-24 días</strong>
+              </article>
+            </div>
+          </section>
+          <section class="reviews-section">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Opiniones</p>
+                <h2>¿Qué dicen nuestros clientes?</h2>
+              </div>
+              <strong>4,9/5</strong>
+            </div>
+            <div class="reviews-grid">
+              <article class="review-card">
+                <img alt="Foto de Laura" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=160&q=80">
+                <p>“En diez minutos tenía una ruta por Japón con presupuesto, documentos y días bien repartidos. Me ahorró horas.”</p>
+                <strong>Laura Martínez</strong>
+                <span>Viaje a Japón</span>
+              </article>
+              <article class="review-card">
+                <img alt="Foto de Sergio" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=160&q=80">
+                <p>“Lo mejor fue que no me recomendó cosas imposibles. Ajustó Bali a mis días y al dinero real que tenía.”</p>
+                <strong>Sergio López</strong>
+                <span>Escapada a Bali</span>
+              </article>
+              <article class="review-card">
+                <img alt="Foto de Miriam" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80">
+                <p>“El reparto de gastos con mis amigos y la checklist nos salvaron el viaje. Todo estaba en el mismo sitio.”</p>
+                <strong>Miriam Soler</strong>
+                <span>Ruta por Italia</span>
+              </article>
+            </div>
+            <form class="review-form">
+              <div>
+                <p class="eyebrow">Tu experiencia</p>
+                <h3>Deja tu reseña</h3>
+              </div>
+              <input name="reviewName" placeholder="Tu nombre" aria-label="Tu nombre">
+              <input name="reviewTrip" placeholder="Destino o ruta" aria-label="Destino o ruta">
+              <select name="reviewRating" aria-label="Puntuación">
+                <option>5 estrellas</option>
+                <option>4 estrellas</option>
+                <option>3 estrellas</option>
+                <option>2 estrellas</option>
+                <option>1 estrella</option>
+              </select>
+              <input name="reviewText" placeholder="Cuenta qué te ha parecido AtlasIQ" aria-label="Reseña">
+              <button type="button">Enviar reseña</button>
+            </form>
+          </section>
+        </section>
+
+        <section id="tripsPanel" class="trips-panel app-page hidden">
           <div class="panel-head">
             <div>
               <p class="eyebrow">Inicio</p>
@@ -89,7 +256,7 @@
           <div id="tripList" class="trip-list"></div>
         </section>
 
-        <section id="tripDetail" class="trip-detail hidden">
+        <section id="tripDetail" class="trip-detail app-page hidden">
           <div class="panel-head">
             <div>
               <p class="eyebrow">Viaje</p>
@@ -107,6 +274,15 @@
                   <strong id="visaStatus"></strong>
                   <p id="visaDetail"></p>
                   <a id="visaLink" target="_blank" rel="noreferrer">Abrir trámite oficial</a>
+                </section>
+                <section class="travel-tool">
+                  <h3>Clima</h3>
+                  <dl class="weather-list">
+                    <div><dt>Temperatura</dt><dd id="weatherAverage"></dd></div>
+                    <div><dt>Lluvia</dt><dd id="weatherRain"></dd></div>
+                    <div><dt>Mejor época</dt><dd id="weatherBestMonths"></dd></div>
+                  </dl>
+                  <p class="muted">Clima orientativo por temporada.</p>
                 </section>
                 <section class="travel-tool">
                   <h3>Conversor</h3>
@@ -128,12 +304,36 @@
                   <strong id="currencyResult"></strong>
                   <p class="muted">Cambio orientativo.</p>
                 </section>
+                <section class="travel-tool">
+                  <h3>Circular y alquiler</h3>
+                  <dl class="weather-list">
+                    <div><dt>Lado</dt><dd id="drivingSide"></dd></div>
+                    <div><dt>Coche</dt><dd id="drivingCar"></dd></div>
+                    <div><dt>Moto</dt><dd id="drivingMoto"></dd></div>
+                  </dl>
+                  <p id="drivingNote" class="muted"></p>
+                </section>
               </div>
             </div>
             <ol id="tripItinerary" class="itinerary-list"></ol>
             <div>
               <h3>Checklist</h3>
               <div id="tripChecklist" class="checklist"></div>
+              <section class="documents-box">
+                <h3>Documentos</h3>
+                <form id="documentForm" class="document-form">
+                  <select name="type" aria-label="Tipo de documento">
+                    <option value="Pasaporte">Pasaporte</option>
+                    <option value="Visado">Visado</option>
+                    <option value="Seguro">Seguro</option>
+                    <option value="Reserva">Reserva</option>
+                    <option value="Vuelo">Vuelo</option>
+                  </select>
+                  <input name="name" placeholder="Nombre o referencia" required>
+                  <button type="submit">Añadir</button>
+                </form>
+                <div id="tripDocuments" class="document-list"></div>
+              </section>
             </div>
             <section class="expenses">
               <div>
@@ -161,11 +361,143 @@
           </div>
         </section>
 
-        <section class="profile-panel">
+        <section id="cruisesPanel" class="cruises-panel app-page hidden">
+          <div class="cruise-hero">
+            <div>
+              <p class="eyebrow">Cruceros</p>
+              <h2>Rutas por mar, escalas y camarotes en un mismo plan.</h2>
+              <p>Compara cruceros por zona, duración, puerto de salida, tipo de barco y presupuesto estimado.</p>
+            </div>
+          </div>
+          <section class="cruise-search">
+            <label>
+              Zona
+              <select>
+                <option>Mediterráneo</option>
+                <option>Caribe</option>
+                <option>Fiordos noruegos</option>
+                <option>Islas griegas</option>
+                <option>Río Danubio</option>
+              </select>
+            </label>
+            <label>
+              Duración
+              <select>
+                <option>3-5 noches</option>
+                <option>7 noches</option>
+                <option>10-14 noches</option>
+                <option>Más de 14 noches</option>
+              </select>
+            </label>
+            <label>
+              Estilo
+              <select>
+                <option>Familiar</option>
+                <option>Lujo tranquilo</option>
+                <option>Fiesta y ocio</option>
+                <option>Cultural</option>
+              </select>
+            </label>
+            <label>
+              Camarote
+              <select>
+                <option>Interior</option>
+                <option>Exterior</option>
+                <option>Balcón</option>
+                <option>Suite</option>
+              </select>
+            </label>
+          </section>
+          <section class="cruise-grid">
+            <article class="cruise-card">
+              <span>7 noches</span>
+              <h3>Mediterráneo clásico</h3>
+              <p>Barcelona, Marsella, Génova, Roma, Nápoles y Palma.</p>
+              <dl><div><dt>Salida</dt><dd>Barcelona</dd></div><div><dt>Desde</dt><dd>790 €</dd></div></dl>
+              <button type="button">Guardar crucero</button>
+            </article>
+            <article class="cruise-card">
+              <span>8 noches</span>
+              <h3>Islas griegas</h3>
+              <p>Atenas, Mykonos, Santorini, Creta y Rodas.</p>
+              <dl><div><dt>Salida</dt><dd>Atenas</dd></div><div><dt>Desde</dt><dd>920 €</dd></div></dl>
+              <button type="button">Guardar crucero</button>
+            </article>
+            <article class="cruise-card">
+              <span>7 noches</span>
+              <h3>Caribe oriental</h3>
+              <p>Miami, Bahamas, Puerto Rico y República Dominicana.</p>
+              <dl><div><dt>Salida</dt><dd>Miami</dd></div><div><dt>Desde</dt><dd>1.150 €</dd></div></dl>
+              <button type="button">Guardar crucero</button>
+            </article>
+            <article class="cruise-card">
+              <span>10 noches</span>
+              <h3>Fiordos noruegos</h3>
+              <p>Copenhague, Bergen, Geiranger, Flåm y Stavanger.</p>
+              <dl><div><dt>Salida</dt><dd>Copenhague</dd></div><div><dt>Desde</dt><dd>1.340 €</dd></div></dl>
+              <button type="button">Guardar crucero</button>
+            </article>
+            <article class="cruise-card">
+              <span>5 noches</span>
+              <h3>Mini crucero mediterráneo</h3>
+              <p>Valencia, Ibiza, Cerdeña y Roma.</p>
+              <dl><div><dt>Salida</dt><dd>Valencia</dd></div><div><dt>Desde</dt><dd>520 €</dd></div></dl>
+              <button type="button">Guardar crucero</button>
+            </article>
+            <article class="cruise-card">
+              <span>6 noches</span>
+              <h3>Danubio cultural</h3>
+              <p>Viena, Bratislava, Budapest y Wachau en crucero fluvial.</p>
+              <dl><div><dt>Salida</dt><dd>Viena</dd></div><div><dt>Desde</dt><dd>980 €</dd></div></dl>
+              <button type="button">Guardar crucero</button>
+            </article>
+          </section>
+          <section class="cruise-tips">
+            <article><strong>Incluye revisar</strong><span>Propinas, bebidas, excursiones, tasas portuarias y seguro.</span></article>
+            <article><strong>Mejor camarote</strong><span>Balcón para fiordos/islas; interior si priorizas presupuesto.</span></article>
+            <article><strong>Documentación</strong><span>Pasaporte si toca puertos fuera de Schengen o itinerarios internacionales.</span></article>
+          </section>
+        </section>
+
+        <section id="paymentsPanel" class="payments-panel app-page hidden">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Pagos</p>
+              <h2>Centro de pagos</h2>
+            </div>
+            <strong>EUR</strong>
+          </div>
+          <div class="payments-grid">
+            <article class="payment-card payment-total">
+              <p>Saldo previsto</p>
+              <strong id="paymentTotal">0 €</strong>
+              <span>Calculado desde tus viajes activos.</span>
+            </article>
+            <article class="payment-card">
+              <h3>Método principal</h3>
+              <p>Tarjeta personal terminada en ****</p>
+              <button type="button">Añadir método</button>
+            </article>
+            <article class="payment-card">
+              <h3>Próximos pagos</h3>
+              <ul class="payment-list">
+                <li><span>Reservas pendientes</span><strong id="pendingPayments">0</strong></li>
+                <li><span>Gastos compartidos</span><strong id="sharedPayments">0</strong></li>
+                <li><span>Documentación y visados</span><strong>0 €</strong></li>
+              </ul>
+            </article>
+            <article class="payment-card">
+              <h3>Seguridad</h3>
+              <p>Los pagos reales irán por proveedor externo con tokenización. AtlasIQ no guardará números de tarjeta.</p>
+            </article>
+          </div>
+        </section>
+
+        <section id="profilePanel" class="profile-panel app-page hidden">
           <div class="profile-card">
             <img id="profileAvatar" alt="Foto de usuario">
             <div>
-              <p class="eyebrow">Perfil</p>
+              <p class="eyebrow">Panel de usuario</p>
               <h2 id="profileName">Completa tu perfil</h2>
               <p id="profileMeta"></p>
             </div>
@@ -191,18 +523,42 @@
             <label>Correo<input name="email" type="email" autocomplete="email" required></label>
             <label>Número de teléfono<input name="phone" type="tel" autocomplete="tel" placeholder="+34 600 000 000" required></label>
             <label>Nueva contraseña<input name="password" type="password" autocomplete="new-password" placeholder="Dejar igual"></label>
+            <section class="personal-documents">
+              <div>
+                <h3>Documentos personales</h3>
+                <p>DNI, pasaporte, seguro, visados o reservas importantes.</p>
+              </div>
+              <label>Subir documento<input id="personalDocumentFile" type="file" accept=".pdf,image/*"></label>
+              <div id="personalDocumentList" class="personal-document-list"></div>
+            </section>
             <button type="submit">Guardar perfil</button>
             <p id="profileMessage" class="message" aria-live="polite"></p>
           </form>
         </section>
 
-        <section id="advisor" class="advisor">
+        <section id="advisor" class="advisor app-page hidden">
           <section class="questionnaire">
             <h2>¿Qué tipo de viaje buscas?</h2>
+            <div class="planner-options">
+              <div><strong>Ámbito</strong><span>Nacional · Internacional · Me da igual</span></div>
+              <div><strong>Continente</strong><span>Europa · Asia · América · África · Oceanía</span></div>
+              <div><strong>Paisaje</strong><span>Playa · Montaña · Sin preferencia</span></div>
+              <div><strong>Transporte</strong><span>Sin vehículo · Coche · Moto</span></div>
+              <div><strong>Vuelo</strong><span>Directo · Escalas cortas · Escala para visitar otro país</span></div>
+              <div><strong>Plan</strong><span>Cultura · Fiesta · Equilibrado</span></div>
+            </div>
             <form id="tripForm">
               <label>¿Qué buscas?<input name="goal" value="descansar, comer bien y conocer sitios nuevos" required></label>
 
               <div class="grid-2">
+                <label>
+                  Ámbito del viaje
+                  <select name="tripScope">
+                    <option value="any">Me da igual</option>
+                    <option value="national">Turismo nacional</option>
+                    <option value="international">Viaje internacional</option>
+                  </select>
+                </label>
                 <label>
                   Continente
                   <select name="continent">
@@ -214,12 +570,24 @@
                     <option value="oceania">Oceania</option>
                   </select>
                 </label>
+              </div>
+
+              <div class="grid-2">
                 <label>
                   Paisaje
                   <select name="landscape">
                     <option value="any">Ninguna preferencia</option>
                     <option value="beach">Playa</option>
                     <option value="mountain">Montaña</option>
+                  </select>
+                </label>
+                <label>
+                  Transporte en destino
+                  <select name="rentalMode">
+                    <option value="any">Me da igual</option>
+                    <option value="none">Sin alquilar vehículo</option>
+                    <option value="car">Quiero alquilar coche</option>
+                    <option value="moto">Quiero alquilar moto</option>
                   </select>
                 </label>
               </div>
@@ -241,6 +609,19 @@
                     <option value="party">Fiesta</option>
                   </select>
                 </label>
+              </div>
+
+              <div class="grid-2">
+                <label>
+                  Vuelo
+                  <select name="flightMode">
+                    <option value="any">Me da igual</option>
+                    <option value="direct">Quiero vuelos directos</option>
+                    <option value="short-stopover">Acepto escalas cortas</option>
+                    <option value="visit-stopover">Quiero escala para ver otro país</option>
+                  </select>
+                </label>
+                <label>Días para escala aprovechable<input name="stopoverDays" type="number" min="0" max="4" value="1"></label>
               </div>
 
               <div class="grid-2">
@@ -266,6 +647,28 @@
       </section>
     </main>
 
-    <script type="module" src="src/app/main.js"></script>
+    <script>
+      window.AtlasIQPages = {
+        show(pageId) {
+          const target = document.getElementById(pageId);
+          if (!target) return;
+          document.querySelectorAll(".app-page").forEach((page) => {
+            page.classList.toggle("hidden", page !== target);
+          });
+          document.querySelectorAll("[data-page-target]").forEach((button) => {
+            button.classList.toggle("active", button.dataset.pageTarget === pageId);
+          });
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      };
+      document.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-page-target]");
+        if (!button) return;
+        event.preventDefault();
+        window.AtlasIQPages.show(button.dataset.pageTarget);
+      });
+    </script>
+    <script type="module" src="src/app/main.js?v=20260709-asia-real"></script>
+    <script type="module" src="src/routes/advisor-live.js?v=20260709-final"></script>
   </body>
 </html>

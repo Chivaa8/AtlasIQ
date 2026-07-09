@@ -1,36 +1,52 @@
 import { $ } from "../app/dom.js";
+import { showPage } from "../app/pages.js";
 import { buildItinerary } from "../schemas/itinerary.js";
 import { convertCurrency, tripSplit } from "../schemas/trip.js";
-import { addCompanion, addExpense, toggleChecklistItem, tripById } from "../services/trips.js";
+import { addCompanion, addDocument, addExpense, toggleChecklistItem, toggleDocumentReady, tripById } from "../services/trips.js";
 
 const euro = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
 let activeTripId = "";
 
 export function mountTripDetailRoute() {
   $("#closeTripDetailBtn").addEventListener("click", () => {
-    $("#tripDetail").classList.add("hidden");
-    $("#advisor").classList.remove("hidden");
+    showPage("tripsPanel");
   });
-  $("#tripDetail").addEventListener("change", (event) => {
+  $("#tripDetail").addEventListener("change", async (event) => {
     const checkbox = event.target.closest("[data-check-item]");
+    const documentCheckbox = event.target.closest("[data-document-id]");
+    if (documentCheckbox) {
+      const trip = await toggleDocumentReady(documentCheckbox.dataset.tripId, documentCheckbox.dataset.documentId);
+      if (trip) showTripDetail(trip.id);
+      return;
+    }
     if (!checkbox) return;
-    const trip = toggleChecklistItem(checkbox.dataset.tripId, checkbox.dataset.checkItem);
+    const trip = await toggleChecklistItem(checkbox.dataset.tripId, checkbox.dataset.checkItem);
     if (trip) showTripDetail(trip.id);
   });
-  $("#expenseForm").addEventListener("submit", (event) => {
+  $("#expenseForm").addEventListener("submit", async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    const trip = addExpense(activeTripId, {
+    const trip = await addExpense(activeTripId, {
       concept: data.get("concept").trim(),
       amount: data.get("amount")
     });
     event.currentTarget.reset();
     if (trip) showTripDetail(trip.id);
   });
-  $("#companionForm").addEventListener("submit", (event) => {
+  $("#companionForm").addEventListener("submit", async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    const trip = addCompanion(activeTripId, data.get("name"));
+    const trip = await addCompanion(activeTripId, data.get("name"));
+    event.currentTarget.reset();
+    if (trip) showTripDetail(trip.id);
+  });
+  $("#documentForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const trip = await addDocument(activeTripId, {
+      type: data.get("type"),
+      name: data.get("name")
+    });
     event.currentTarget.reset();
     if (trip) showTripDetail(trip.id);
   });
@@ -57,10 +73,11 @@ export function showTripDetail(id) {
       ${item.label}
     </label>
   `).join("");
+  renderDocuments(trip);
   renderExpenses(trip);
   renderTravelTools(trip);
-  $("#advisor").classList.add("hidden");
-  $("#tripDetail").classList.remove("hidden");
+  renderDrivingRules(trip.driving);
+  showPage("tripDetail");
 }
 
 function renderTravelTools(trip) {
@@ -72,9 +89,24 @@ function renderTravelTools(trip) {
   $("#visaStatus").textContent = visa.status;
   $("#visaDetail").textContent = visa.detail;
   $("#visaLink").href = visa.url;
+  renderWeather(trip.weather);
   $("#currencyAmount").value = trip.estimatedCost;
   $("#currencyTarget").value = trip.currency || "EUR";
   renderConverter(trip);
+}
+
+function renderWeather(weather) {
+  const info = weather || { average: "Sin datos", rain: "Sin datos", bestMonths: "Revisar antes de viajar" };
+  $("#weatherAverage").textContent = info.average;
+  $("#weatherRain").textContent = info.rain;
+  $("#weatherBestMonths").textContent = info.bestMonths;
+}
+
+function renderDrivingRules(driving = {}) {
+  $("#drivingSide").textContent = driving.side || "Revisar";
+  $("#drivingCar").textContent = driving.car || "Revisa permiso, seguro y requisitos locales antes de alquilar.";
+  $("#drivingMoto").textContent = driving.moto || "Revisa permiso de moto, casco, seguro y cilindrada permitida.";
+  $("#drivingNote").textContent = driving.note || "Consulta siempre fuentes oficiales antes de circular.";
 }
 
 function renderActiveConverter() {
@@ -91,6 +123,19 @@ function renderConverter(trip) {
     currency: target,
     maximumFractionDigits: 0
   }).format(converted);
+}
+
+function renderDocuments(trip) {
+  const documents = trip.documents || [];
+  $("#tripDocuments").innerHTML = documents.length
+    ? documents.map((document) => `
+      <label class="document-row">
+        <input type="checkbox" data-trip-id="${trip.id}" data-document-id="${document.id}" ${document.ready ? "checked" : ""}>
+        <span>${document.name}</span>
+        <strong>${document.type}</strong>
+      </label>
+    `).join("")
+    : `<p class="muted">Aún no has añadido documentos.</p>`;
 }
 
 function renderExpenses(trip) {

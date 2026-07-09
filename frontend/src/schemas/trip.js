@@ -8,8 +8,10 @@ export function createTrip(destination, userEmail) {
     estimatedCost: destination.estimatedCost,
     currency: destination.currency || "EUR",
     visa: destination.visa || null,
+    weather: destination.weather || null,
     highlights: destination.highlights || [],
     checklist: defaultChecklist(),
+    documents: [],
     companions: [],
     expenses: [],
     createdAt: new Date().toISOString()

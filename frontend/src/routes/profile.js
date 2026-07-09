@@ -1,5 +1,6 @@
 import { $ } from "../app/dom.js";
 import { currentUser } from "../app/storage.js";
+import { showPage } from "../app/pages.js";
 import { currencies } from "../schemas/profile.js";
 import { labels } from "../schemas/user.js";
 import { saveProfile } from "../services/profile.js";
@@ -9,6 +10,8 @@ import { renderTrips } from "./trips.js";
 export function mountProfileRoute() {
   $("#profileForm").addEventListener("submit", submitProfile);
   $("#profilePhoto").addEventListener("change", previewPhoto);
+  $("#personalDocumentFile").addEventListener("change", addPersonalDocument);
+  $("#personalDocumentList").addEventListener("click", removePersonalDocument);
 }
 
 export function renderProfile() {
@@ -27,13 +30,14 @@ export function renderProfile() {
   fields.phone.value = user.phone || "";
   fields.password.value = "";
   $("#profilePhotoValue").value = user.photo || "";
+  renderPersonalDocuments(user.personalDocuments || []);
   showProfileMessage("");
 }
 
-function submitProfile(event) {
+async function submitProfile(event) {
   event.preventDefault();
   const data = new FormData(event.currentTarget);
-  const error = saveProfile({
+  const error = await saveProfile(profilePayload({
     id: currentUser().id,
     name: data.get("name").trim(),
     firstSurname: data.get("firstSurname").trim(),
@@ -42,18 +46,20 @@ function submitProfile(event) {
     currency: data.get("currency"),
     email: data.get("email").trim(),
     phone: data.get("phone").trim(),
-    password: data.get("password") || currentUser().password,
+    password: data.get("password"),
     photo: data.get("photo")
-  });
+  }));
   if (error) return showProfileMessage(error);
   const user = currentUser();
   $("#userSummary").textContent = `${user.name} - origen: ${labels[user.origin]}`;
+  $("#accountName").textContent = user.name || "Mi cuenta";
+  $("#accountEmail").textContent = user.email || "";
+  $("#accountAvatar").src = user.photo || $("#profileAvatar").src;
   renderProfile();
-  document.querySelector(".profile-panel").classList.add("hidden");
-  $("#advisor").classList.remove("hidden");
   $("#appView").classList.remove("onboarding");
   renderTrips();
   renderRecommendations();
+  showPage("homeDashboard");
 }
 
 function previewPhoto(event) {
@@ -66,6 +72,73 @@ function previewPhoto(event) {
     $("#profilePhotoValue").value = reader.result;
   });
   reader.readAsDataURL(file);
+}
+
+async function addPersonalDocument(event) {
+  const file = event.target.files[0];
+  event.target.value = "";
+  if (!file) return;
+  if (file.size > 1024 * 1024) return showProfileMessage("El documento debe pesar menos de 1 MB.");
+  const dataUrl = await readFile(file);
+  const user = currentUser();
+  const personalDocuments = [
+    ...(user.personalDocuments || []),
+    { id: crypto.randomUUID(), name: file.name, type: file.type || "Documento", size: file.size, dataUrl }
+  ];
+  const error = await saveProfile(profilePayload({ personalDocuments }));
+  if (error) return showProfileMessage(error);
+  renderProfile();
+  showProfileMessage("Documento guardado.");
+}
+
+async function removePersonalDocument(event) {
+  const button = event.target.closest("[data-remove-document]");
+  if (!button) return;
+  const personalDocuments = (currentUser().personalDocuments || []).filter((document) => document.id !== button.dataset.removeDocument);
+  const error = await saveProfile(profilePayload({ personalDocuments }));
+  if (error) return showProfileMessage(error);
+  renderProfile();
+  showProfileMessage("Documento eliminado.");
+}
+
+function renderPersonalDocuments(documents) {
+  $("#personalDocumentList").innerHTML = documents.length
+    ? documents.map(personalDocumentTemplate).join("")
+    : "<p class=\"muted\">Aún no has subido documentos personales.</p>";
+}
+
+function personalDocumentTemplate(document) {
+  return `
+    <article class="personal-document">
+      <div>
+        <strong>${document.name}</strong>
+        <span>${document.type} - ${formatSize(document.size)}</span>
+      </div>
+      <a class="link-button" href="${document.dataUrl}" download="${document.name}">Descargar</a>
+      <button class="link-button" type="button" data-remove-document="${document.id}">Eliminar</button>
+    </article>
+  `;
+}
+
+function profilePayload(overrides = {}) {
+  const user = currentUser();
+  return {
+    ...user,
+    ...overrides,
+    personalDocuments: overrides.personalDocuments || user.personalDocuments || []
+  };
+}
+
+function readFile(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.addEventListener("load", () => resolve(reader.result));
+    reader.readAsDataURL(file);
+  });
+}
+
+function formatSize(bytes = 0) {
+  return `${Math.max(1, Math.round(bytes / 1024))} KB`;
 }
 
 function showProfileMessage(text) {

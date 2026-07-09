@@ -15,7 +15,16 @@ AtlasIQ/
 
 ## Ejecutar
 
-Abre `frontend/index.html` en el navegador.
+Puertos fijos:
+
+- Frontend: `http://127.0.0.1:8022`
+- Backend API: `http://127.0.0.1:8023`
+- Tests HTTP backend: `http://127.0.0.1:8024`
+
+```bash
+npm run dev:backend
+npm run dev:frontend
+```
 
 ## Checks
 

@@ -1,0 +1,230 @@
+[
+  {
+    "id": "d5a0cae0-c34d-4570-b5d2-d8529a4d2e8e",
+    "userEmail": "oriolchiva8@gmail.com",
+    "name": "Marruecos",
+    "city": "Marrakech, Atlas y Essaouira",
+    "continent": "africa",
+    "estimatedCost": 3600,
+    "currency": "MAD",
+    "visa": {
+      "status": "Normalmente sin visado hasta 90 días",
+      "detail": "Revisa pasaporte, validez mínima y requisitos de entrada antes de comprar vuelos.",
+      "url": "https://www.exteriores.gob.es/es/ServiciosAlCiudadano/Paginas/Recomendaciones-de-viaje.aspx"
+    },
+    "weather": {
+      "average": "20-35 °C",
+      "rain": "Muy baja",
+      "bestMonths": "Marzo a mayo y septiembre a noviembre"
+    },
+    "highlights": [
+      "zocos",
+      "desierto",
+      "riad",
+      "montañas"
+    ],
+    "checklist": [
+      {
+        "id": "flights",
+        "label": "Vuelos reservados",
+        "done": false
+      },
+      {
+        "id": "hotel",
+        "label": "Alojamiento confirmado",
+        "done": false
+      },
+      {
+        "id": "insurance",
+        "label": "Seguro de viaje",
+        "done": false
+      },
+      {
+        "id": "documents",
+        "label": "Documentación revisada",
+        "done": false
+      },
+      {
+        "id": "activities",
+        "label": "Actividades principales",
+        "done": false
+      }
+    ],
+    "documents": [],
+    "companions": [],
+    "expenses": [],
+    "archivedAt": null,
+    "createdAt": "2026-07-09T14:36:08.310Z"
+  },
+  {
+    "id": "ebac403c-dc6e-4944-a41f-7fdc3d9b4b7b",
+    "userEmail": "oriolchiva8@gmail.com",
+    "name": "Indonesia",
+    "city": "Bali y Lombok",
+    "continent": "asia",
+    "estimatedCost": 4275,
+    "currency": "IDR",
+    "visa": {
+      "status": "e-VOA o visado a la llegada",
+      "detail": "Conviene tramitarlo online antes de viajar si está disponible para tu caso.",
+      "url": "https://evisa.imigrasi.go.id/"
+    },
+    "weather": {
+      "average": "24-31 °C",
+      "rain": "Alta de noviembre a marzo",
+      "bestMonths": "Mayo a septiembre"
+    },
+    "highlights": [
+      "playas",
+      "arrozales",
+      "volcanes",
+      "beach clubs"
+    ],
+    "checklist": [
+      {
+        "id": "flights",
+        "label": "Vuelos reservados",
+        "done": false
+      },
+      {
+        "id": "hotel",
+        "label": "Alojamiento confirmado",
+        "done": false
+      },
+      {
+        "id": "insurance",
+        "label": "Seguro de viaje",
+        "done": false
+      },
+      {
+        "id": "documents",
+        "label": "Documentación revisada",
+        "done": false
+      },
+      {
+        "id": "activities",
+        "label": "Actividades principales",
+        "done": false
+      }
+    ],
+    "documents": [],
+    "companions": [],
+    "expenses": [],
+    "archivedAt": null,
+    "createdAt": "2026-07-09T14:36:07.402Z"
+  },
+  {
+    "id": "263775ae-ecf3-44c3-8183-4646e6a204a0",
+    "userEmail": "oriolchiva8@gmail.com",
+    "name": "Portugal",
+    "city": "Lisboa, Porto y Algarve",
+    "continent": "europe",
+    "estimatedCost": 4725,
+    "currency": "EUR",
+    "visa": {
+      "status": "Sin visado para ciudadanos españoles",
+      "detail": "Documento nacional de identidad o pasaporte en vigor.",
+      "url": "https://www.exteriores.gob.es/es/ServiciosAlCiudadano/Paginas/Recomendaciones-de-viaje.aspx"
+    },
+    "weather": {
+      "average": "18-28 °C",
+      "rain": "Baja en verano",
+      "bestMonths": "Mayo a octubre"
+    },
+    "highlights": [
+      "costa",
+      "vino",
+      "azulejos",
+      "vida nocturna"
+    ],
+    "checklist": [
+      {
+        "id": "flights",
+        "label": "Vuelos reservados",
+        "done": false
+      },
+      {
+        "id": "hotel",
+        "label": "Alojamiento confirmado",
+        "done": false
+      },
+      {
+        "id": "insurance",
+        "label": "Seguro de viaje",
+        "done": false
+      },
+      {
+        "id": "documents",
+        "label": "Documentación revisada",
+        "done": false
+      },
+      {
+        "id": "activities",
+        "label": "Actividades principales",
+        "done": false
+      }
+    ],
+    "documents": [],
+    "companions": [],
+    "expenses": [],
+    "archivedAt": null,
+    "createdAt": "2026-07-09T14:36:05.906Z"
+  },
+  {
+    "id": "4acdd266-f1d5-4747-a88c-a0e3355468ee",
+    "userEmail": "oriolchiva8@gmail.com",
+    "name": "Portugal",
+    "city": "Lisboa, Porto y Algarve",
+    "continent": "europe",
+    "estimatedCost": 4725,
+    "currency": "EUR",
+    "visa": {
+      "status": "Sin visado para ciudadanos españoles",
+      "detail": "Documento nacional de identidad o pasaporte en vigor.",
+      "url": "https://www.exteriores.gob.es/es/ServiciosAlCiudadano/Paginas/Recomendaciones-de-viaje.aspx"
+    },
+    "weather": {
+      "average": "18-28 °C",
+      "rain": "Baja en verano",
+      "bestMonths": "Mayo a octubre"
+    },
+    "highlights": [
+      "costa",
+      "vino",
+      "azulejos",
+      "vida nocturna"
+    ],
+    "checklist": [
+      {
+        "id": "flights",
+        "label": "Vuelos reservados",
+        "done": false
+      },
+      {
+        "id": "hotel",
+        "label": "Alojamiento confirmado",
+        "done": false
+      },
+      {
+        "id": "insurance",
+        "label": "Seguro de viaje",
+        "done": false
+      },
+      {
+        "id": "documents",
+        "label": "Documentación revisada",
+        "done": false
+      },
+      {
+        "id": "activities",
+        "label": "Actividades principales",
+        "done": false
+      }
+    ],
+    "documents": [],
+    "companions": [],
+    "expenses": [],
+    "archivedAt": "2026-07-09T14:48:49.549Z",
+    "createdAt": "2026-07-09T14:36:04.102Z"
+  }
+]

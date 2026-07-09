@@ -1,72 +1,109 @@
-import { currentUser } from "../app/storage.js";
-import { createTrip } from "../schemas/trip.js";
+import { currentUser, sessionToken } from "../app/storage.js";
+import { apiBaseUrl } from "../app/config.js";
 
 const tripsKey = "atlasiq-trips";
+const tripsEndpoint = `${apiBaseUrl}/trips`;
 
-export function tripsForCurrentUser() {
+export async function tripsForCurrentUser() {
   const user = currentUser();
   if (!user) return [];
-  return allTrips().filter((trip) => trip.userEmail === user.email);
+  const trips = await requestTrips();
+  return trips || cachedTrips().filter((trip) => trip.userEmail === user.email);
 }
 
 export function tripById(id) {
-  return tripsForCurrentUser().find((trip) => trip.id === id);
+  return cachedTrips().find((trip) => trip.id === id);
 }
 
-export function createTripFromDestination(destination) {
+export async function createTripFromDestination(destination) {
+  const trip = await requestJson(tripsEndpoint, {
+    method: "POST",
+    body: JSON.stringify({ destination })
+  });
+  if (trip) upsertTrip(trip);
+  return trip;
+}
+
+export async function toggleChecklistItem(tripId, itemId) {
+  const trip = await requestJson(`${tripsEndpoint}/${tripId}/checklist/${itemId}`, { method: "PATCH" });
+  if (trip) upsertTrip(trip);
+  return trip || tripById(tripId);
+}
+
+export async function addExpense(tripId, expense) {
+  const trip = await requestJson(`${tripsEndpoint}/${tripId}/expenses`, {
+    method: "POST",
+    body: JSON.stringify({ concept: expense.concept, amount: expense.amount })
+  });
+  if (trip) upsertTrip(trip);
+  return trip || tripById(tripId);
+}
+
+export async function addCompanion(tripId, name) {
+  const trip = await requestJson(`${tripsEndpoint}/${tripId}/companions`, {
+    method: "POST",
+    body: JSON.stringify({ name })
+  });
+  if (trip) upsertTrip(trip);
+  return trip || tripById(tripId);
+}
+
+export async function addDocument(tripId, document) {
+  const trip = await requestJson(`${tripsEndpoint}/${tripId}/documents`, {
+    method: "POST",
+    body: JSON.stringify(document)
+  });
+  if (trip) upsertTrip(trip);
+  return trip || tripById(tripId);
+}
+
+export async function toggleDocumentReady(tripId, documentId) {
+  const trip = await requestJson(`${tripsEndpoint}/${tripId}/documents/${documentId}`, { method: "PATCH" });
+  if (trip) upsertTrip(trip);
+  return trip || tripById(tripId);
+}
+
+export async function archiveTrip(tripId) {
+  const trip = await requestJson(`${tripsEndpoint}/${tripId}/archive`, { method: "PATCH" });
+  if (trip) upsertTrip(trip);
+  return trip;
+}
+
+async function requestTrips() {
+  const trips = await requestJson(tripsEndpoint);
+  if (!trips) return null;
   const user = currentUser();
-  if (!user) return;
-  const trip = createTrip(destination, user.email);
-  localStorage.setItem(tripsKey, JSON.stringify([trip, ...allTrips()]));
+  const otherTrips = cachedTrips().filter((trip) => trip.userEmail !== user.email);
+  localStorage.setItem(tripsKey, JSON.stringify([...trips, ...otherTrips]));
+  return trips;
 }
 
-export function toggleChecklistItem(tripId, itemId) {
-  const trips = allTrips().map((trip) => {
-    if (trip.id !== tripId) return trip;
-    return {
-      ...trip,
-      checklist: trip.checklist.map((item) => (
-        item.id === itemId ? { ...item, done: !item.done } : item
-      ))
-    };
-  });
-  localStorage.setItem(tripsKey, JSON.stringify(trips));
-  return tripById(tripId);
+async function requestJson(url, options = {}) {
+  const token = sessionToken();
+  if (!token) return null;
+  try {
+    const response = await fetch(url, {
+      method: options.method || "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: options.body
+    });
+    return response.ok ? response.json() : null;
+  } catch {
+    return null;
+  }
 }
 
-export function addExpense(tripId, expense) {
-  const trips = allTrips().map((trip) => {
-    if (trip.id !== tripId) return trip;
-    return {
-      ...trip,
-      expenses: [
-        { id: crypto.randomUUID(), concept: expense.concept, amount: Number(expense.amount) },
-        ...(trip.expenses || [])
-      ]
-    };
-  });
-  localStorage.setItem(tripsKey, JSON.stringify(trips));
-  return tripById(tripId);
+function upsertTrip(nextTrip) {
+  const trips = cachedTrips();
+  const exists = trips.some((trip) => trip.id === nextTrip.id);
+  localStorage.setItem(tripsKey, JSON.stringify(
+    exists ? trips.map((trip) => (trip.id === nextTrip.id ? nextTrip : trip)) : [nextTrip, ...trips]
+  ));
 }
 
-export function addCompanion(tripId, name) {
-  const cleanName = String(name || "").trim();
-  if (!cleanName) return tripById(tripId);
-
-  const trips = allTrips().map((trip) => {
-    if (trip.id !== tripId) return trip;
-    return {
-      ...trip,
-      companions: [
-        ...(trip.companions || []),
-        { id: crypto.randomUUID(), name: cleanName }
-      ]
-    };
-  });
-  localStorage.setItem(tripsKey, JSON.stringify(trips));
-  return tripById(tripId);
-}
-
-function allTrips() {
+function cachedTrips() {
   return JSON.parse(localStorage.getItem(tripsKey) || "[]");
 }

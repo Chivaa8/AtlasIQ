@@ -13,6 +13,8 @@ assert.equal(trip.userEmail, "user@example.com");
 assert.equal(trip.name, "Portugal");
 assert.equal(trip.checklist.length, 5);
 assert.equal(trip.checklist[0].done, false);
+assert.equal(trip.weather, null);
+assert.deepEqual(trip.documents, []);
 assert.deepEqual(trip.companions, []);
 assert.deepEqual(trip.expenses, []);
 

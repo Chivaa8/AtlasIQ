@@ -1,5 +1,6 @@
-import "./recommendation.test.js";
-import "./profile.test.js";
-import "./password-reset.test.js";
-import "./trip.test.js";
-import "./itinerary.test.js";
+await import("./recommendation.test.js");
+await import("./profile.test.js");
+await import("./password-reset.test.js");
+await import("./trip.test.js");
+await import("./itinerary.test.js");
+await import("./auth-api.test.js");
