@@ -647,28 +647,6 @@
       </section>
     </main>
 
-    <script>
-      window.AtlasIQPages = {
-        show(pageId) {
-          const target = document.getElementById(pageId);
-          if (!target) return;
-          document.querySelectorAll(".app-page").forEach((page) => {
-            page.classList.toggle("hidden", page !== target);
-          });
-          document.querySelectorAll("[data-page-target]").forEach((button) => {
-            button.classList.toggle("active", button.dataset.pageTarget === pageId);
-          });
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }
-      };
-      document.addEventListener("click", (event) => {
-        const button = event.target.closest("[data-page-target]");
-        if (!button) return;
-        event.preventDefault();
-        window.AtlasIQPages.show(button.dataset.pageTarget);
-      });
-    </script>
-    <script type="module" src="src/app/main.js?v=20260709-asia-real"></script>
-    <script type="module" src="src/routes/advisor-live.js?v=20260709-final"></script>
+    <script type="module" src="src/app/main.js?v=20260710-cleanup"></script>
   </body>
 </html>

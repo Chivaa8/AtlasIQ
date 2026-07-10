@@ -3,7 +3,8 @@ import { createServer } from "../src/server.js";
 
 const userStore = memoryStore();
 const tripStore = memoryStore();
-const server = createServer({ userStore, tripStore, sendMail: async () => {} });
+const sent = [];
+const server = createServer({ userStore, tripStore, sendMail: async (message) => sent.push(message) });
 const testPort = 8024;
 
 await new Promise((resolve) => server.listen(testPort, "127.0.0.1", resolve));
@@ -26,6 +27,15 @@ try {
 
   assert.ok(registered.token);
   assert.equal(registered.user.email, "oriol@example.com");
+
+  await request("POST", "/api/password-reset/request", { email: "ORIOL@example.com" });
+  const token = sent[0].text.match(/[0-9]{6}/)[0];
+  const reset = await request("POST", "/api/password-reset/confirm", { email: "oriol@example.com", token, password: "newsecret" });
+  assert.deepEqual(reset, {});
+  const relogged = await request("POST", "/api/auth/login", { email: "oriol@example.com", password: "newsecret" });
+  assert.equal(relogged.user.id, registered.user.id);
+  const oldPassword = await request("POST", "/api/auth/login", { email: "oriol@example.com", password: "secret123" });
+  assert.equal(oldPassword.error, "invalid credentials");
 
   const trip = await request("POST", "/api/trips", {
     destination: {

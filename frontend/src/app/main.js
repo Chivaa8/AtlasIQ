@@ -1,4 +1,4 @@
-import { mountAdvisorRoute, renderRecommendations } from "../routes/advisor.js?v=20260709-asia-real";
+import { mountAdvisorRoute } from "../routes/advisor.js";
 import { mountPageNavigation } from "./pages.js";
 import { mountAuthRoute, showApp } from "../routes/auth.js";
 import { mountProfileRoute } from "../routes/profile.js";

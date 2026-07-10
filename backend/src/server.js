@@ -86,13 +86,14 @@ export function createServer({
 
     if (request.method === "POST" && url.pathname === "/api/password-reset/request") {
       const body = await readJson(request);
-      await createPasswordReset({ email: body.email, sendMail });
+      const email = String(body.email || "").trim().toLowerCase();
+      if (await auth.hasUser(email)) await createPasswordReset({ email, sendMail });
       return json(response, 200, {});
     }
 
     if (request.method === "POST" && url.pathname === "/api/password-reset/confirm") {
       const body = await readJson(request);
-      const error = confirmPasswordReset(body);
+      const error = await confirmPasswordReset({ ...body, updatePassword: (email, password) => auth.resetPassword(email, password) });
       return error ? json(response, 400, { error }) : json(response, 200, {});
     }
 

@@ -70,4 +70,14 @@ await assert.rejects(
   /token expired/
 );
 
+const previousNodeEnv = process.env.NODE_ENV;
+const previousAuthSecret = process.env.AUTH_SECRET;
+process.env.NODE_ENV = "production";
+delete process.env.AUTH_SECRET;
+assert.throws(() => createAuthService(memoryStore), /AUTH_SECRET is required/);
+if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
+else process.env.NODE_ENV = previousNodeEnv;
+if (previousAuthSecret === undefined) delete process.env.AUTH_SECRET;
+else process.env.AUTH_SECRET = previousAuthSecret;
+
 console.log("AtlasIQ backend auth check passed");
