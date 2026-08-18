@@ -522,7 +522,10 @@
           </div>
           <form id="bookingFilters" class="booking-filters">
             <label>Destino o idioma<input name="destination" placeholder="Roma, Tokio, español..."></label>
-            <label>Tipo<select name="type"><option value="">Todo</option><option value="guide">Guías turísticos</option><option value="hotel">Hoteles</option><option value="insurance">Seguros de viaje</option><option value="package">Vuelo + hotel</option></select></label>
+            <label>Tipo<select name="type"><option value="">Todo</option><option value="guide">Guías turísticos</option><option value="flight">Vuelos</option><option value="hotel">Hoteles</option><option value="insurance">Seguros de viaje</option><option value="rental">Coches y motos</option><option value="package">Vuelo + hotel</option></select></label>
+            <label>Entrada<input name="start" type="date"></label>
+            <label>Salida<input name="end" type="date"></label>
+            <label>Viajeros<input name="travelers" type="number" min="1" max="9" value="2"></label>
           </form>
           <div class="booking-layout">
             <div id="bookingOffers" class="booking-grid"></div>

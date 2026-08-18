@@ -9,12 +9,16 @@ const offers = [
   { id: "hotel-tokyo", type: "hotel", destination: "Tokio", title: "Shinjuku City Stay", detail: "3 estrellas · metro cercano · cancelación flexible", price: 110, unit: "noche", rating: 4.5 },
   { id: "insurance-basic", type: "insurance", destination: "Mundial", title: "Seguro Esencial", detail: "Asistencia médica 100.000 € · equipaje · repatriación", price: 29, unit: "viaje", rating: 4.5 },
   { id: "insurance-plus", type: "insurance", destination: "Mundial", title: "Seguro Completo", detail: "Asistencia médica 500.000 € · cancelación · deportes", price: 59, unit: "viaje", rating: 4.8 },
+  { id: "rental-car", type: "rental", destination: "Mundial", title: "Alquiler de coche", detail: "Comparación de vehículos · kilometraje y coberturas según proveedor", price: 45, unit: "día", rating: 4.6 },
+  { id: "rental-moto", type: "rental", destination: "Mundial", title: "Alquiler de moto", detail: "Scooter o moto · revisa permiso, casco, franquicia y cilindrada", price: 25, unit: "día", rating: 4.5 },
+  { id: "flight-rome", type: "flight", destination: "Roma", title: "Vuelos a Roma", detail: "Compara horarios, escalas, equipaje y condiciones de cambio", price: 120, unit: "persona", rating: 4.6 },
+  { id: "flight-tokyo", type: "flight", destination: "Tokio", title: "Vuelos a Tokio", detail: "Compara rutas, escalas, equipaje y condiciones de cambio", price: 690, unit: "persona", rating: 4.6 },
   { id: "package-rome", type: "package", destination: "Roma", title: "Vuelo + hotel en Roma", detail: "Vuelo ida y vuelta · 4 noches · desayuno", price: 489, unit: "persona", rating: 4.7 },
   { id: "package-bali", type: "package", destination: "Bali", title: "Vuelo + resort en Bali", detail: "Vuelo ida y vuelta · 7 noches · desayuno y traslado", price: 1090, unit: "persona", rating: 4.8 },
   { id: "package-tokyo", type: "package", destination: "Tokio", title: "Vuelo + hotel en Tokio", detail: "Vuelo ida y vuelta · 6 noches · seguro esencial", price: 1260, unit: "persona", rating: 4.7 }
 ];
 
-const typeLabels = { guide: "Guía local", hotel: "Hotel", insurance: "Seguro", package: "Vuelo + hotel" };
+const typeLabels = { guide: "Guía local", hotel: "Hotel", insurance: "Seguro", rental: "Coche o moto", flight: "Vuelo", package: "Vuelo + hotel" };
 const key = "atlasiq-saved-offers";
 
 export function mountBookingsRoute() {
@@ -29,15 +33,15 @@ export function mountBookingsRoute() {
 function renderOffers() {
   const filters = Object.fromEntries(new FormData(document.querySelector("#bookingFilters")));
   const filtered = offers.filter((offer) => offerMatches(offer, filters));
-  document.querySelector("#bookingOffers").innerHTML = filtered.map(offerCard).join("") || "<p class='trip-empty'>No hay opciones con esos filtros.</p>";
+  document.querySelector("#bookingOffers").innerHTML = filtered.map((offer) => offerCard(offer, filters)).join("") || "<p class='trip-empty'>No hay opciones con esos filtros.</p>";
   document.querySelector("#bookingCount").textContent = `${filtered.length} opciones`;
 }
 
-function offerCard(offer) {
+function offerCard(offer, filters) {
   return `<article class="booking-card">
     <span>${typeLabels[offer.type]}</span><h3>${offer.title}</h3><p>${offer.destination} · ${offer.detail}</p>
     <div><strong>${offer.rating.toFixed(1)} ★</strong><strong>Desde ${offer.price} € / ${offer.unit}</strong></div>
-    <button type="button" data-save-offer="${offer.id}">Guardar opción</button>
+    <div class="booking-actions"><button type="button" data-save-offer="${offer.id}">Guardar opción</button><a href="${providerUrl(offer, filters)}" target="_blank" rel="noopener noreferrer">Consultar disponibilidad real</a></div>
   </article>`;
 }
 
@@ -67,6 +71,23 @@ export function offerMatches(offer, filters) {
   const query = String(filters.destination || "").trim().toLocaleLowerCase("es");
   return (!filters.type || offer.type === filters.type)
     && (!query || `${offer.destination} ${offer.title} ${offer.detail}`.toLocaleLowerCase("es").includes(query));
+}
+
+export function providerUrl(offer, filters = {}) {
+  const destination = offer.destination === "Mundial" ? String(filters.destination || "") : offer.destination;
+  const query = encodeURIComponent(destination || "viaje");
+  const start = encodeURIComponent(filters.start || "");
+  const end = encodeURIComponent(filters.end || "");
+  const travelers = Math.max(1, Number(filters.travelers) || 1);
+  const urls = {
+    guide: `https://www.getyourguide.es/s/?q=${query}`,
+    hotel: `https://www.booking.com/searchresults.es.html?ss=${query}&checkin=${start}&checkout=${end}&group_adults=${travelers}&no_rooms=1`,
+    insurance: "https://www.iatiseguros.com/",
+    rental: `https://www.booking.com/cars/index.es.html?search=${query}`,
+    flight: "https://www.skyscanner.es/transporte/vuelos/",
+    package: "https://www.expedia.es/Paquetes"
+  };
+  return urls[offer.type];
 }
 
 function savedIds() {

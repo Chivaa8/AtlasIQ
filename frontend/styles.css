@@ -763,7 +763,7 @@ dd {
 }
 
 .booking-filters {
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 2fr 1.2fr repeat(3, 1fr);
   margin-bottom: 18px;
 }
 
@@ -807,6 +807,19 @@ dd {
   justify-content: space-between;
   gap: 12px;
   margin: 18px 0;
+}
+
+.booking-actions a {
+  display: inline-grid;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--brand);
+  border-radius: 8px;
+  color: var(--brand);
+  font-weight: 800;
+  text-align: center;
+  text-decoration: none;
 }
 
 .saved-offers {
