@@ -1,13 +1,19 @@
+import { saveUsers, users } from "../app/storage.js";
 import { apiBaseUrl } from "../app/config.js";
 
 const passwordResetEndpoint = `${apiBaseUrl}/password-reset`;
 
 export async function requestPasswordReset(email) {
+  const user = users().find((item) => item.email === email);
+  if (!user) return "";
   return postJson(`${passwordResetEndpoint}/request`, { email });
 }
 
 export async function resetPassword({ email, token, password }) {
-  return postJson(`${passwordResetEndpoint}/confirm`, { email, token, password });
+  const error = await postJson(`${passwordResetEndpoint}/confirm`, { email, token, password });
+  if (error) return error;
+  saveUsers(users().map((user) => (user.email === email ? { ...user, password } : user)));
+  return "";
 }
 
 async function postJson(url, body) {

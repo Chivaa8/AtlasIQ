@@ -5,7 +5,7 @@ const keyLength = 32;
 const digest = "sha256";
 const defaultTokenTtlMs = 7 * 24 * 60 * 60 * 1000;
 
-export function createAuthService(store, secret = defaultAuthSecret(), tokenTtlMs = defaultTokenTtlMs) {
+export function createAuthService(store, secret = process.env.AUTH_SECRET || "dev-secret-change-me", tokenTtlMs = defaultTokenTtlMs) {
   return {
     async register(input) {
       const user = normalizeUser(input);
@@ -25,19 +25,6 @@ export function createAuthService(store, secret = defaultAuthSecret(), tokenTtlM
       const user = (await store.read()).find((item) => item.email === email);
       if (!user || !verifyPassword(input.password, user.passwordHash)) throw new Error("invalid credentials");
       return session(user, secret, tokenTtlMs);
-    },
-    async hasUser(email) {
-      const normalizedEmail = String(email || "").trim().toLowerCase();
-      return (await store.read()).some((item) => item.email === normalizedEmail);
-    },
-    async resetPassword(email, password) {
-      const normalizedEmail = String(email || "").trim().toLowerCase();
-      if (String(password || "").length < 6) throw new Error("password must have 6 characters");
-      const users = await store.read();
-      const index = users.findIndex((item) => item.email === normalizedEmail);
-      if (index === -1) throw new Error("user not found");
-      users[index] = { ...users[index], passwordHash: hashPassword(password), updatedAt: new Date().toISOString() };
-      await store.write(users);
     },
     async me(token) {
       const payload = verifyToken(token, secret);
@@ -118,11 +105,6 @@ function verifyPassword(password, stored) {
   const candidate = pbkdf2Sync(String(password), salt, Number(storedIterations), keyLength, digest);
   const expected = Buffer.from(key, "base64url");
   return candidate.length === expected.length && timingSafeEqual(candidate, expected);
-}
-
-function defaultAuthSecret() {
-  if (!process.env.AUTH_SECRET && process.env.NODE_ENV === "production") throw new Error("AUTH_SECRET is required in production");
-  return process.env.AUTH_SECRET || "dev-secret-change-me";
 }
 
 function session(user, secret, tokenTtlMs = defaultTokenTtlMs) {

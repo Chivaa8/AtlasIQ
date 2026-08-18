@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>AtlasIQ | Recomendador inteligente de viajes</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%230c7168%22/><path d=%22M16 46 30 17h5l13 29h-8l-3-8H27l-3 8zm14-15h5l-2-7z%22 fill=%22white%22/></svg>">
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
@@ -86,6 +87,8 @@
             <button class="link-button" type="button" data-page-target="advisor">Planificador</button>
             <button class="link-button" type="button" data-page-target="cruisesPanel">Cruceros</button>
             <button class="link-button" type="button" data-page-target="paymentsPanel">Pagos</button>
+            <button class="link-button" type="button" data-page-target="toolsPanel">Herramientas</button>
+            <button class="link-button" type="button" data-page-target="bookingsPanel">Reservas</button>
           </nav>
           <div class="topbar-actions">
             <details class="account-menu">
@@ -203,7 +206,7 @@
                 <p class="eyebrow">Opiniones</p>
                 <h2>¿Qué dicen nuestros clientes?</h2>
               </div>
-              <strong>4,9/5</strong>
+              <strong id="reviewSummary">4,9/5 · 3 reseñas</strong>
             </div>
             <div class="reviews-grid">
               <article class="review-card">
@@ -225,22 +228,23 @@
                 <span>Ruta por Italia</span>
               </article>
             </div>
-            <form class="review-form">
+            <form id="reviewForm" class="review-form">
               <div>
                 <p class="eyebrow">Tu experiencia</p>
                 <h3>Deja tu reseña</h3>
               </div>
-              <input name="reviewName" placeholder="Tu nombre" aria-label="Tu nombre">
-              <input name="reviewTrip" placeholder="Destino o ruta" aria-label="Destino o ruta">
+              <input name="reviewName" placeholder="Tu nombre" aria-label="Tu nombre" required>
+              <input name="reviewTrip" placeholder="Destino o ruta" aria-label="Destino o ruta" required>
               <select name="reviewRating" aria-label="Puntuación">
-                <option>5 estrellas</option>
-                <option>4 estrellas</option>
-                <option>3 estrellas</option>
-                <option>2 estrellas</option>
-                <option>1 estrella</option>
+                <option value="5">5 estrellas</option>
+                <option value="4">4 estrellas</option>
+                <option value="3">3 estrellas</option>
+                <option value="2">2 estrellas</option>
+                <option value="1">1 estrella</option>
               </select>
-              <input name="reviewText" placeholder="Cuenta qué te ha parecido AtlasIQ" aria-label="Reseña">
-              <button type="button">Enviar reseña</button>
+              <textarea name="reviewText" rows="4" minlength="20" placeholder="Cuenta qué te ha parecido AtlasIQ" aria-label="Reseña" required></textarea>
+              <button type="submit">Enviar reseña</button>
+              <p id="reviewMessage" class="message" aria-live="polite"></p>
             </form>
           </section>
         </section>
@@ -369,82 +373,85 @@
               <p>Compara cruceros por zona, duración, puerto de salida, tipo de barco y presupuesto estimado.</p>
             </div>
           </div>
-          <section class="cruise-search">
+          <form id="cruiseFilters" class="cruise-search">
             <label>
               Zona
-              <select>
-                <option>Mediterráneo</option>
-                <option>Caribe</option>
-                <option>Fiordos noruegos</option>
-                <option>Islas griegas</option>
-                <option>Río Danubio</option>
+              <select name="zone">
+                <option value="">Todas</option>
+                <option value="mediterranean">Mediterráneo</option>
+                <option value="caribbean">Caribe</option>
+                <option value="fjords">Fiordos noruegos</option>
+                <option value="greek-islands">Islas griegas</option>
+                <option value="danube">Río Danubio</option>
               </select>
             </label>
             <label>
               Duración
-              <select>
-                <option>3-5 noches</option>
-                <option>7 noches</option>
-                <option>10-14 noches</option>
-                <option>Más de 14 noches</option>
+              <select name="duration">
+                <option value="">Todas</option>
+                <option value="short">3-6 noches</option>
+                <option value="week">7-9 noches</option>
+                <option value="long">10-14 noches</option>
               </select>
             </label>
             <label>
               Estilo
-              <select>
-                <option>Familiar</option>
-                <option>Lujo tranquilo</option>
-                <option>Fiesta y ocio</option>
-                <option>Cultural</option>
+              <select name="style">
+                <option value="">Todos</option>
+                <option value="family">Familiar</option>
+                <option value="quiet">Lujo tranquilo</option>
+                <option value="party">Fiesta y ocio</option>
+                <option value="cultural">Cultural</option>
               </select>
             </label>
             <label>
               Camarote
-              <select>
-                <option>Interior</option>
-                <option>Exterior</option>
-                <option>Balcón</option>
-                <option>Suite</option>
+              <select name="cabin">
+                <option value="">Todos</option>
+                <option value="inside">Interior</option>
+                <option value="outside">Exterior</option>
+                <option value="balcony">Balcón</option>
+                <option value="suite">Suite</option>
               </select>
             </label>
-          </section>
-          <section class="cruise-grid">
-            <article class="cruise-card">
+          </form>
+          <section id="cruiseGrid" class="cruise-grid">
+            <article class="cruise-card" data-zone="mediterranean" data-duration="week" data-style="family" data-cabin="inside">
               <span>7 noches</span>
               <h3>Mediterráneo clásico</h3>
               <p>Barcelona, Marsella, Génova, Roma, Nápoles y Palma.</p>
               <dl><div><dt>Salida</dt><dd>Barcelona</dd></div><div><dt>Desde</dt><dd>790 €</dd></div></dl>
               <button type="button">Guardar crucero</button>
             </article>
-            <article class="cruise-card">
+            <article class="cruise-card" data-zone="greek-islands" data-duration="week" data-style="quiet" data-cabin="balcony">
               <span>8 noches</span>
               <h3>Islas griegas</h3>
               <p>Atenas, Mykonos, Santorini, Creta y Rodas.</p>
               <dl><div><dt>Salida</dt><dd>Atenas</dd></div><div><dt>Desde</dt><dd>920 €</dd></div></dl>
               <button type="button">Guardar crucero</button>
             </article>
-            <article class="cruise-card">
+            <article class="cruise-card" data-zone="caribbean" data-duration="week" data-style="party" data-cabin="balcony">
               <span>7 noches</span>
               <h3>Caribe oriental</h3>
               <p>Miami, Bahamas, Puerto Rico y República Dominicana.</p>
               <dl><div><dt>Salida</dt><dd>Miami</dd></div><div><dt>Desde</dt><dd>1.150 €</dd></div></dl>
               <button type="button">Guardar crucero</button>
             </article>
-            <article class="cruise-card">
+            <article class="cruise-card" data-zone="fjords" data-duration="long" data-style="quiet" data-cabin="outside">
               <span>10 noches</span>
               <h3>Fiordos noruegos</h3>
               <p>Copenhague, Bergen, Geiranger, Flåm y Stavanger.</p>
               <dl><div><dt>Salida</dt><dd>Copenhague</dd></div><div><dt>Desde</dt><dd>1.340 €</dd></div></dl>
               <button type="button">Guardar crucero</button>
             </article>
-            <article class="cruise-card">
+            <article class="cruise-card" data-zone="mediterranean" data-duration="short" data-style="family" data-cabin="inside">
               <span>5 noches</span>
               <h3>Mini crucero mediterráneo</h3>
               <p>Valencia, Ibiza, Cerdeña y Roma.</p>
               <dl><div><dt>Salida</dt><dd>Valencia</dd></div><div><dt>Desde</dt><dd>520 €</dd></div></dl>
               <button type="button">Guardar crucero</button>
             </article>
-            <article class="cruise-card">
+            <article class="cruise-card" data-zone="danube" data-duration="short" data-style="cultural" data-cabin="suite">
               <span>6 noches</span>
               <h3>Danubio cultural</h3>
               <p>Viena, Bratislava, Budapest y Wachau en crucero fluvial.</p>
@@ -452,6 +459,7 @@
               <button type="button">Guardar crucero</button>
             </article>
           </section>
+          <p id="cruiseMessage" class="message" aria-live="polite"></p>
           <section class="cruise-tips">
             <article><strong>Incluye revisar</strong><span>Propinas, bebidas, excursiones, tasas portuarias y seguro.</span></article>
             <article><strong>Mejor camarote</strong><span>Balcón para fiordos/islas; interior si priorizas presupuesto.</span></article>
@@ -476,7 +484,7 @@
             <article class="payment-card">
               <h3>Método principal</h3>
               <p>Tarjeta personal terminada en ****</p>
-              <button type="button">Añadir método</button>
+              <button type="button" disabled title="Disponible al conectar un proveedor de pagos">Próximamente</button>
             </article>
             <article class="payment-card">
               <h3>Próximos pagos</h3>
@@ -486,9 +494,74 @@
                 <li><span>Documentación y visados</span><strong>0 €</strong></li>
               </ul>
             </article>
+            <article class="payment-card payment-planner">
+              <h3>Planificar pago</h3>
+              <form id="paymentForm">
+                <input name="concept" placeholder="Concepto" aria-label="Concepto del pago" required>
+                <input name="amount" type="number" min="0.01" step="0.01" placeholder="Importe EUR" aria-label="Importe del pago" required>
+                <input name="date" type="date" aria-label="Fecha prevista" required>
+                <button type="submit">Añadir pago</button>
+              </form>
+              <p id="paymentMessage" class="message" aria-live="polite"></p>
+            </article>
+            <article class="payment-card payment-schedule">
+              <div class="payment-schedule-head"><h3>Pagos planificados</h3><strong id="scheduledPaymentTotal">0 €</strong></div>
+              <ul id="scheduledPayments" class="payment-list"><li><span>No hay pagos previstos.</span></li></ul>
+            </article>
             <article class="payment-card">
               <h3>Seguridad</h3>
               <p>Los pagos reales irán por proveedor externo con tokenización. AtlasIQ no guardará números de tarjeta.</p>
+            </article>
+          </div>
+        </section>
+
+        <section id="bookingsPanel" class="bookings-panel app-page hidden">
+          <div class="panel-head">
+            <div><p class="eyebrow">Reservas</p><h2>Guías, hoteles, seguros y paquetes.</h2></div>
+            <strong id="bookingCount">0 opciones</strong>
+          </div>
+          <form id="bookingFilters" class="booking-filters">
+            <label>Destino o idioma<input name="destination" placeholder="Roma, Tokio, español..."></label>
+            <label>Tipo<select name="type"><option value="">Todo</option><option value="guide">Guías turísticos</option><option value="hotel">Hoteles</option><option value="insurance">Seguros de viaje</option><option value="package">Vuelo + hotel</option></select></label>
+          </form>
+          <div class="booking-layout">
+            <div id="bookingOffers" class="booking-grid"></div>
+            <aside class="saved-offers"><h3>Opciones guardadas <span id="savedOfferCount">0</span></h3><ul id="savedOffers"><li>No has guardado opciones.</li></ul><p>Guardar no realiza ninguna reserva ni cobro.</p></aside>
+          </div>
+        </section>
+
+        <section id="toolsPanel" class="tools-panel app-page hidden">
+          <div class="panel-head">
+            <div><p class="eyebrow">Herramientas</p><h2>Todo lo práctico, antes de salir.</h2></div>
+            <strong>Sin comisiones ni reservas ocultas</strong>
+          </div>
+          <div class="tools-grid">
+            <article class="tool-card">
+              <p class="eyebrow">Divisas</p><h3>Conversor de monedas</h3>
+              <form id="globalCurrencyForm" class="tool-form">
+                <input name="amount" type="number" min="0" step="0.01" value="100" aria-label="Cantidad">
+                <select name="from" aria-label="Moneda de origen"><option>EUR</option><option>USD</option><option>GBP</option><option>JPY</option><option>MXN</option><option>MAD</option><option>ISK</option><option>CRC</option><option>IDR</option><option>NZD</option></select>
+                <select name="to" aria-label="Moneda de destino"><option>USD</option><option>EUR</option><option>GBP</option><option>JPY</option><option>MXN</option><option>MAD</option><option>ISK</option><option>CRC</option><option>IDR</option><option>NZD</option></select>
+              </form>
+              <strong id="globalCurrencyResult" class="tool-result"></strong>
+              <p class="muted">Cambio orientativo; comprueba el tipo aplicado por tu banco.</p>
+            </article>
+            <article class="tool-card">
+              <p class="eyebrow">Idiomas</p><h3>Frases útiles para viajar</h3>
+              <label>Idioma<select id="guideLanguage"><option value="en">Inglés</option><option value="fr">Francés</option><option value="it">Italiano</option><option value="pt">Portugués</option><option value="de">Alemán</option><option value="ja">Japonés</option><option value="ar">Árabe</option></select></label>
+              <ul id="phraseList" class="phrase-list"></ul>
+            </article>
+            <article class="tool-card rental-card">
+              <p class="eyebrow">Movilidad</p><h3>Alquiler de coche o moto</h3>
+              <form id="rentalForm" class="tool-form rental-form">
+                <label>Ciudad<input name="city" placeholder="Ciudad de recogida" required></label>
+                <label>Vehículo<select name="vehicle"><option value="car">Coche</option><option value="moto">Moto</option></select></label>
+                <label>Días<input name="days" type="number" min="1" max="60" value="3" required></label>
+                <label>Edad del conductor<input name="age" type="number" min="18" max="90" value="30" required></label>
+                <label>Cobertura<select name="coverage"><option value="basic">Básica</option><option value="full">Completa</option></select></label>
+                <button type="submit">Calcular alquiler</button>
+              </form>
+              <div id="rentalResult" class="rental-result" aria-live="polite"></div>
             </article>
           </div>
         </section>
@@ -647,6 +720,27 @@
       </section>
     </main>
 
-    <script type="module" src="src/app/main.js?v=20260710-cleanup"></script>
+    <script>
+      window.AtlasIQPages = {
+        show(pageId) {
+          const target = document.getElementById(pageId);
+          if (!target) return;
+          document.querySelectorAll(".app-page").forEach((page) => {
+            page.classList.toggle("hidden", page !== target);
+          });
+          document.querySelectorAll("[data-page-target]").forEach((button) => {
+            button.classList.toggle("active", button.dataset.pageTarget === pageId);
+          });
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      };
+      document.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-page-target]");
+        if (!button) return;
+        event.preventDefault();
+        window.AtlasIQPages.show(button.dataset.pageTarget);
+      });
+    </script>
+    <script type="module" src="src/app/main.js?v=20260710-country-images"></script>
   </body>
 </html>

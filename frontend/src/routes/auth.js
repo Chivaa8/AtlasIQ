@@ -5,7 +5,7 @@ import { isProfileComplete } from "../schemas/profile.js";
 import { labels, validateUser } from "../schemas/user.js";
 import { loginUser, registerUser } from "../services/auth-api.js";
 import { requestPasswordReset, resetPassword } from "../services/password-reset.js";
-import { renderRecommendations } from "./advisor.js";
+import { renderRecommendations } from "./advisor.js?v=20260710-country-images";
 import { renderProfile } from "./profile.js";
 import { renderTrips } from "./trips.js";
 

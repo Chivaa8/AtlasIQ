@@ -75,6 +75,8 @@ export function mountAdvisorRoute() {
   document.addEventListener("click", (event) => {
     if (event.target.closest('[data-page-target="advisor"]')) setTimeout(() => renderRecommendations(true), 0);
   });
+  // ponytail: tiny polling guard for native selects that miss events in cached browser sessions.
+  setInterval(renderRecommendations, 300);
   $("#results").addEventListener("click", async (event) => {
     const button = event.target.closest("[data-create-trip]");
     if (!button) return;

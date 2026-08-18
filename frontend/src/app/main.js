@@ -1,9 +1,13 @@
-import { mountAdvisorRoute } from "../routes/advisor.js";
+import { mountAdvisorRoute } from "../routes/advisor.js?v=20260710-country-images";
 import { mountPageNavigation } from "./pages.js";
-import { mountAuthRoute, showApp } from "../routes/auth.js";
+import { mountAuthRoute, showApp } from "../routes/auth.js?v=20260710-country-images";
 import { mountProfileRoute } from "../routes/profile.js";
 import { mountTripDetailRoute } from "../routes/trip-detail.js";
 import { mountTripsRoute } from "../routes/trips.js";
+import { mountExtrasRoute } from "../routes/extras.js";
+import { mountPaymentsRoute } from "../routes/payments.js";
+import { mountToolsRoute } from "../routes/tools.js";
+import { mountBookingsRoute } from "../routes/bookings.js";
 
 mountAuthRoute();
 mountPageNavigation();
@@ -11,4 +15,8 @@ mountAdvisorRoute();
 mountProfileRoute();
 mountTripsRoute();
 mountTripDetailRoute();
+mountExtrasRoute();
+mountPaymentsRoute();
+mountToolsRoute();
+mountBookingsRoute();
 showApp();

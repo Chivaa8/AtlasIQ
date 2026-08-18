@@ -3,6 +3,17 @@ dist/
 coverage/
 .env
 .env.*
+!.env.example
 *.log
 backend/data/*.json
 !backend/data/*.example.json
+
+# Iteraciones y archivos aplanados anteriores a la consolidación.
+/.atlasiq-work/
+/atlasiq-*/
+/atlasiq_*/
+/pulseops/
+/*.js
+/*.test.js
+/*.css
+/backend-*.json

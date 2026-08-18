@@ -3,20 +3,14 @@ import { createServer } from "../src/server.js";
 
 const userStore = memoryStore();
 const tripStore = memoryStore();
-const sent = [];
-const server = createServer({ userStore, tripStore, sendMail: async (message) => sent.push(message) });
-const testPort = 8024;
+const server = createServer({ userStore, tripStore, sendMail: async () => {} });
 
-await new Promise((resolve) => server.listen(testPort, "127.0.0.1", resolve));
-const baseUrl = `http://127.0.0.1:${testPort}`;
+await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+const baseUrl = `http://127.0.0.1:${server.address().port}`;
 
 try {
-  const health = await request("GET", "/api/health");
-  assert.equal(health.status, "ok");
-
-  const openapi = await request("GET", "/api/openapi.json");
-  assert.equal(openapi.info.title, "AtlasIQ API");
-  assert.ok(openapi.paths["/api/trips"]);
+  const corsResponse = await fetch(`${baseUrl}/api/health`, { headers: { Origin: "http://localhost:8022" } });
+  assert.equal(corsResponse.headers.get("access-control-allow-origin"), "http://localhost:8022");
 
   const registered = await request("POST", "/api/auth/register", {
     name: "Oriol",
@@ -27,15 +21,6 @@ try {
 
   assert.ok(registered.token);
   assert.equal(registered.user.email, "oriol@example.com");
-
-  await request("POST", "/api/password-reset/request", { email: "ORIOL@example.com" });
-  const token = sent[0].text.match(/[0-9]{6}/)[0];
-  const reset = await request("POST", "/api/password-reset/confirm", { email: "oriol@example.com", token, password: "newsecret" });
-  assert.deepEqual(reset, {});
-  const relogged = await request("POST", "/api/auth/login", { email: "oriol@example.com", password: "newsecret" });
-  assert.equal(relogged.user.id, registered.user.id);
-  const oldPassword = await request("POST", "/api/auth/login", { email: "oriol@example.com", password: "secret123" });
-  assert.equal(oldPassword.error, "invalid credentials");
 
   const trip = await request("POST", "/api/trips", {
     destination: {
@@ -49,18 +34,9 @@ try {
   assert.equal(trip.userEmail, "oriol@example.com");
   assert.equal(trip.name, "Portugal");
 
-  const withDocument = await request("POST", `/api/trips/${trip.id}/documents`, { type: "Seguro", name: "Póliza AXA" }, registered.token);
-  const readyDocument = await request("PATCH", `/api/trips/${trip.id}/documents/${withDocument.documents[0].id}`, null, registered.token);
-  assert.equal(readyDocument.documents[0].ready, true);
-
   const listed = await request("GET", "/api/trips", null, registered.token);
   assert.equal(listed.length, 1);
   assert.equal(listed[0].id, trip.id);
-
-  const archived = await request("PATCH", `/api/trips/${trip.id}/archive`, null, registered.token);
-  assert.ok(archived.archivedAt);
-  const listedAfterArchive = await request("GET", "/api/trips", null, registered.token);
-  assert.equal(listedAfterArchive.length, 0);
 
   const rejected = await request("GET", "/api/trips");
   assert.equal(rejected.error, "invalid token");

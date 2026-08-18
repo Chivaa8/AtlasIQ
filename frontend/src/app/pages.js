@@ -8,6 +8,10 @@ export function mountPageNavigation() {
 }
 
 export function showPage(pageId) {
+  if (window.AtlasIQPages?.show) {
+    window.AtlasIQPages.show(pageId);
+    return;
+  }
   if (!document.getElementById(pageId)) return;
   document.querySelectorAll(".app-page").forEach((page) => {
     page.classList.toggle("hidden", page.id !== pageId);

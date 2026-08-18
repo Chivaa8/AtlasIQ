@@ -15,7 +15,11 @@ export function createServer({
   const trips = createTripService(tripStore);
 
   return http.createServer(async (request, response) => {
-    response.setHeader("Access-Control-Allow-Origin", "http://127.0.0.1:8022");
+    const origin = request.headers.origin;
+    if (["http://127.0.0.1:8022", "http://localhost:8022"].includes(origin)) {
+      response.setHeader("Access-Control-Allow-Origin", origin);
+      response.setHeader("Vary", "Origin");
+    }
     response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
     response.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS");
     if (request.method === "OPTIONS") return json(response, 204, {});
@@ -86,14 +90,13 @@ export function createServer({
 
     if (request.method === "POST" && url.pathname === "/api/password-reset/request") {
       const body = await readJson(request);
-      const email = String(body.email || "").trim().toLowerCase();
-      if (await auth.hasUser(email)) await createPasswordReset({ email, sendMail });
+      await createPasswordReset({ email: body.email, sendMail });
       return json(response, 200, {});
     }
 
     if (request.method === "POST" && url.pathname === "/api/password-reset/confirm") {
       const body = await readJson(request);
-      const error = await confirmPasswordReset({ ...body, updatePassword: (email, password) => auth.resetPassword(email, password) });
+      const error = confirmPasswordReset(body);
       return error ? json(response, 400, { error }) : json(response, 200, {});
     }
 

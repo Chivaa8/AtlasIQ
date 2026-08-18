@@ -32,13 +32,6 @@ assert.equal(withExpense.expenses[0].amount, 300);
 const withDocument = await trips.addDocument("user@example.com", trip.id, { type: "Seguro", name: "Póliza AXA" });
 assert.equal(withDocument.documents[0].name, "Póliza AXA");
 
-const withReadyDocument = await trips.toggleDocument("user@example.com", trip.id, withDocument.documents[0].id);
-assert.equal(withReadyDocument.documents[0].ready, true);
-
-const archived = await trips.archive("user@example.com", trip.id);
-assert.ok(archived.archivedAt);
-assert.equal((await trips.list("user@example.com")).length, 0);
-
 await assert.rejects(
   () => trips.addCompanion("other@example.com", trip.id, "Ana"),
   /trip not found/

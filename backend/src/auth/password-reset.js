@@ -5,14 +5,14 @@ const resets = new Map();
 export async function createPasswordReset({ email, sendMail, now = Date.now }) {
   const normalizedEmail = normalizeEmail(email);
   const token = String(crypto.randomInt(100000, 1000000));
-  resets.set(normalizedEmail, {
-    tokenHash: hashToken(token),
-    expiresAt: now() + 15 * 60 * 1000
-  });
   await sendMail({
     to: normalizedEmail,
     subject: "AtlasIQ - recupera tu contraseña",
     text: `Tu token de AtlasIQ es: ${token}. Caduca en 15 minutos.`
+  });
+  resets.set(normalizedEmail, {
+    tokenHash: hashToken(token),
+    expiresAt: now() + 15 * 60 * 1000
   });
   return { ok: true };
 }

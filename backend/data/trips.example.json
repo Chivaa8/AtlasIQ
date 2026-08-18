@@ -1,15 +1,1 @@
-[
-  {
-    "id": "trip-demo",
-    "userEmail": "demo@atlasiq.local",
-    "name": "Portugal",
-    "city": "Lisboa",
-    "continent": "europe",
-    "estimatedCost": 650,
-    "createdAt": "2026-01-01T00:00:00.000Z",
-    "expenses": [],
-    "companions": [],
-    "documents": [],
-    "checklist": []
-  }
-]
+[]

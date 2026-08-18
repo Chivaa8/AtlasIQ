@@ -26,6 +26,14 @@ npm run dev:backend
 npm run dev:frontend
 ```
 
+## Correo de recuperación
+
+1. Copia `.env.example` como `.env`.
+2. Añade tu clave de Resend y un remitente verificado.
+3. Reinicia `npm run dev:backend`.
+
+Para probar sin dominio propio, Resend permite `AtlasIQ <onboarding@resend.dev>` con el Gmail asociado a la cuenta de Resend como destinatario.
+
 ## Checks
 
 ```bash
