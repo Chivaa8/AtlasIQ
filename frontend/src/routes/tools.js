@@ -1,4 +1,5 @@
 import { convertCurrency } from "../schemas/trip.js";
+import { latestRate } from "../services/exchange.js";
 
 const currencies = ["EUR", "USD", "GBP", "JPY", "MXN", "MAD", "ISK", "CRC", "IDR", "NZD"];
 const phrases = {
@@ -21,14 +22,23 @@ export function mountToolsRoute() {
   renderGuide();
 }
 
-function renderCurrency() {
+async function renderCurrency() {
   const form = document.querySelector("#globalCurrencyForm");
   const data = new FormData(form);
   const amount = Number(data.get("amount")) || 0;
   const from = data.get("from");
   const to = data.get("to");
-  const result = convertCurrency(amount, to, from);
-  document.querySelector("#globalCurrencyResult").textContent = `${formatMoney(amount, from)} = ${formatMoney(result, to)}`;
+  const source = document.querySelector("#globalCurrencySource");
+  source.textContent = "Consultando tipo de cambio...";
+  try {
+    const { rate, date } = await latestRate(from, to);
+    document.querySelector("#globalCurrencyResult").textContent = `${formatMoney(amount, from)} = ${formatMoney(amount * rate, to)}`;
+    source.textContent = `Tipo oficial actualizado: ${date}. Tu banco puede aplicar comisiones.`;
+  } catch {
+    const result = convertCurrency(amount, to, from);
+    document.querySelector("#globalCurrencyResult").textContent = `${formatMoney(amount, from)} ≈ ${formatMoney(result, to)}`;
+    source.textContent = "Estimación local: la moneda no está disponible o no hay conexión.";
+  }
 }
 
 function renderGuide() {
