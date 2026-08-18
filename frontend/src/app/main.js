@@ -20,3 +20,19 @@ mountPaymentsRoute();
 mountToolsRoute();
 mountBookingsRoute();
 showApp();
+showCheckoutResult();
+
+function showCheckoutResult() {
+  const url = new URL(window.location.href);
+  const result = url.searchParams.get("payment");
+  if (!result) return;
+  const message = document.querySelector("#checkoutMessage");
+  message.textContent = result === "success"
+    ? "Pago de prueba completado. Puedes consultar el estado en Pagos."
+    : "Pago cancelado. No se ha realizado ningún cargo.";
+  message.classList.toggle("success", result === "success");
+  message.classList.toggle("error", result !== "success");
+  url.searchParams.delete("payment");
+  url.searchParams.delete("session_id");
+  history.replaceState(null, "", url);
+}

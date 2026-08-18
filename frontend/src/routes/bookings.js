@@ -1,9 +1,14 @@
 import { currentUser } from "../app/storage.js";
+import { createCheckout } from "../services/payments-api.js";
 
 const offers = [
   { id: "guide-rome", type: "guide", destination: "Roma", title: "Lucia, guía local", detail: "Español, italiano e inglés · centro histórico y Vaticano", price: 95, unit: "4 horas", rating: 4.9 },
   { id: "guide-tokyo", type: "guide", destination: "Tokio", title: "Kenji, guía local", detail: "Español, japonés e inglés · barrios, gastronomía y templos", price: 120, unit: "5 horas", rating: 4.8 },
   { id: "guide-marrakech", type: "guide", destination: "Marrakech", title: "Samira, guía local", detail: "Español, francés y árabe · medina, zocos e historia", price: 70, unit: "4 horas", rating: 4.9 },
+  { id: "free-tour-rome", type: "free-tour", destination: "Roma", title: "Free tour por Roma", detail: "Centro histórico · pago libre al guía al finalizar", price: 0, unit: "reserva", rating: 4.8 },
+  { id: "free-tour-lisbon", type: "free-tour", destination: "Lisboa", title: "Free tour por Lisboa", detail: "Baixa, Chiado y Alfama · pago libre al guía al finalizar", price: 0, unit: "reserva", rating: 4.8 },
+  { id: "excursion-rome", type: "excursion", destination: "Roma", title: "Excursión a Tivoli", detail: "Villa Adriana y Villa de Este · guía y transporte", price: 69, unit: "persona", rating: 4.7 },
+  { id: "excursion-bali", type: "excursion", destination: "Bali", title: "Templos y arrozales de Bali", detail: "Guía local · transporte · día completo", price: 55, unit: "persona", rating: 4.8 },
   { id: "hotel-rome", type: "hotel", destination: "Roma", title: "Hotel Centro Roma", detail: "4 estrellas · desayuno · cancelación flexible", price: 138, unit: "noche", rating: 4.6 },
   { id: "hotel-bali", type: "hotel", destination: "Bali", title: "Ubud Garden Resort", detail: "4 estrellas · piscina · desayuno · traslado", price: 92, unit: "noche", rating: 4.7 },
   { id: "hotel-tokyo", type: "hotel", destination: "Tokio", title: "Shinjuku City Stay", detail: "3 estrellas · metro cercano · cancelación flexible", price: 110, unit: "noche", rating: 4.5 },
@@ -18,13 +23,15 @@ const offers = [
   { id: "package-tokyo", type: "package", destination: "Tokio", title: "Vuelo + hotel en Tokio", detail: "Vuelo ida y vuelta · 6 noches · seguro esencial", price: 1260, unit: "persona", rating: 4.7 }
 ];
 
-const typeLabels = { guide: "Guía local", hotel: "Hotel", insurance: "Seguro", rental: "Coche o moto", flight: "Vuelo", package: "Vuelo + hotel" };
+const typeLabels = { guide: "Guía local", "free-tour": "Free tour", excursion: "Excursión", hotel: "Hotel", insurance: "Seguro", rental: "Coche o moto", flight: "Vuelo", package: "Vuelo + hotel" };
+const checkoutProducts = new Set(["guide-rome", "guide-tokyo", "guide-marrakech", "excursion-rome", "excursion-bali", "insurance-basic", "insurance-plus"]);
 const key = "atlasiq-saved-offers";
 
 export function mountBookingsRoute() {
   document.querySelector("#bookingFilters").addEventListener("input", renderOffers);
   document.querySelector("#bookingFilters").addEventListener("change", renderOffers);
   document.querySelector("#bookingOffers").addEventListener("click", saveOffer);
+  document.querySelector("#bookingOffers").addEventListener("click", startCheckout);
   document.querySelector("#savedOffers").addEventListener("click", removeOffer);
   renderOffers();
   renderSaved();
@@ -41,7 +48,7 @@ function offerCard(offer, filters) {
   return `<article class="booking-card">
     <span>${typeLabels[offer.type]}</span><h3>${offer.title}</h3><p>${offer.destination} · ${offer.detail}</p>
     <div><strong>${offer.rating.toFixed(1)} ★</strong><strong>Desde ${offer.price} € / ${offer.unit}</strong></div>
-    <div class="booking-actions"><button type="button" data-save-offer="${offer.id}">Guardar opción</button><a href="${providerUrl(offer, filters)}" target="_blank" rel="noopener noreferrer">Consultar disponibilidad real</a></div>
+    <div class="booking-actions"><button type="button" data-save-offer="${offer.id}">Guardar opción</button>${checkoutProducts.has(offer.id) ? `<button type="button" data-checkout-offer="${offer.id}">Pagar con Stripe</button>` : ""}<a href="${providerUrl(offer, filters)}" target="_blank" rel="noopener noreferrer">Consultar disponibilidad real</a></div>
   </article>`;
 }
 
@@ -52,6 +59,17 @@ function saveOffer(event) {
   if (!saved.includes(button.dataset.saveOffer)) saveIds([...saved, button.dataset.saveOffer]);
   button.textContent = "Guardado";
   renderSaved();
+}
+
+async function startCheckout(event) {
+  const button = event.target.closest("[data-checkout-offer]");
+  if (!button) return;
+  button.disabled = true;
+  button.textContent = "Abriendo pago...";
+  const result = await createCheckout(button.dataset.checkoutOffer);
+  if (result.url) return window.location.assign(result.url);
+  button.disabled = false;
+  button.textContent = result.error || "No disponible";
 }
 
 function removeOffer(event) {
@@ -81,6 +99,8 @@ export function providerUrl(offer, filters = {}) {
   const travelers = Math.max(1, Number(filters.travelers) || 1);
   const urls = {
     guide: `https://www.getyourguide.es/s/?q=${query}`,
+    "free-tour": `https://www.guruwalk.com/es/walks?search=${query}`,
+    excursion: `https://www.getyourguide.es/s/?q=${query}`,
     hotel: `https://www.booking.com/searchresults.es.html?ss=${query}&checkin=${start}&checkout=${end}&group_adults=${travelers}&no_rooms=1`,
     insurance: "https://www.iatiseguros.com/",
     rental: `https://www.booking.com/cars/index.es.html?search=${query}`,

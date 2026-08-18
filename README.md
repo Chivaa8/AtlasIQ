@@ -40,6 +40,17 @@ Para probar sin dominio propio, Resend permite `AtlasIQ <onboarding@resend.dev>`
 npm test
 ```
 
+## Pagos con Stripe
+
+AtlasIQ usa Stripe Checkout alojado y no almacena datos de tarjeta.
+
+1. Copia `.env.example` como `.env`.
+2. Configura `STRIPE_SECRET_KEY` y `STRIPE_WEBHOOK_SECRET` con claves de prueba.
+3. Envía webhooks de Stripe a `http://localhost:8023/api/payments/webhook`.
+4. Escucha al menos `checkout.session.completed` y `checkout.session.expired`.
+
+Sin esas variables, AtlasIQ sigue funcionando pero bloquea correctamente la creación de pagos reales.
+
 ## Roadmap corto
 
 1. Mejorar el MVP visual en `frontend/`.

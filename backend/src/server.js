@@ -5,14 +5,18 @@ import { createAuthService } from "./auth/auth-service.js";
 import { createPasswordReset, confirmPasswordReset } from "./auth/password-reset.js";
 import { createJsonStore } from "./storage/json-store.js";
 import { createTripService } from "./trips/trip-service.js";
+import { createStripePaymentService } from "./payments/stripe-payments.js";
 
 export function createServer({
   userStore = createJsonStore(resolve("backend/data/users.json"), []),
   tripStore = createJsonStore(resolve("backend/data/trips.json"), []),
-  sendMail = realSendMail
+  paymentStore = createJsonStore(resolve("backend/data/payments.json"), []),
+  sendMail = realSendMail,
+  stripeOptions
 } = {}) {
   const auth = createAuthService(userStore);
   const trips = createTripService(tripStore);
+  const payments = createStripePaymentService(paymentStore, stripeOptions);
 
   return http.createServer(async (request, response) => {
     const origin = request.headers.origin;
@@ -25,6 +29,14 @@ export function createServer({
     if (request.method === "OPTIONS") return json(response, 204, {});
     const url = new URL(request.url, `http://${request.headers.host}`);
 
+    if (request.method === "POST" && url.pathname === "/api/payments/webhook") {
+      try {
+        return json(response, 200, await payments.webhook(await readBody(request), request.headers["stripe-signature"]));
+      } catch (error) {
+        return json(response, 400, { error: error.message });
+      }
+    }
+
     if (request.method === "GET" && url.pathname === "/api/health") {
       return json(response, 200, { status: "ok", service: "AtlasIQ API" });
     }
@@ -36,6 +48,20 @@ export function createServer({
     if (request.method === "POST" && url.pathname === "/api/auth/register") {
       const body = await readJson(request);
       return action(response, () => auth.register(body));
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/payments/checkout") {
+      const body = await readJson(request);
+      return action(response, async () => payments.checkout(await auth.me(bearerToken(request)), body.productId));
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/payments") {
+      return action(response, async () => payments.list((await auth.me(bearerToken(request))).email));
+    }
+
+    const refundMatch = url.pathname.match(/^\/api\/payments\/([^/]+)\/refund$/);
+    if (request.method === "POST" && refundMatch) {
+      return action(response, async () => payments.refund((await auth.me(bearerToken(request))).email, refundMatch[1]));
     }
 
     if (request.method === "POST" && url.pathname === "/api/auth/login") {
@@ -182,7 +208,11 @@ function bearerToken(request) {
 }
 
 async function readJson(request) {
+  return JSON.parse(await readBody(request) || "{}");
+}
+
+async function readBody(request) {
   const chunks = [];
   for await (const chunk of request) chunks.push(chunk);
-  return JSON.parse(Buffer.concat(chunks).toString() || "{}");
+  return Buffer.concat(chunks).toString();
 }

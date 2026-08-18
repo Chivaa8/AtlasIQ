@@ -17,3 +17,4 @@ backend/data/*.json
 /*.test.js
 /*.css
 /backend-*.json
+/.tools/

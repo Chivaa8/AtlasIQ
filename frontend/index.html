@@ -108,6 +108,8 @@
           </div>
         </header>
 
+        <p id="checkoutMessage" class="message" role="status" aria-live="polite"></p>
+
         <section id="homeDashboard" class="home-dashboard app-page hidden">
           <div class="home-hero home-carousel">
             <div class="carousel-track" aria-hidden="true">
@@ -508,6 +510,10 @@
               <div class="payment-schedule-head"><h3>Pagos planificados</h3><strong id="scheduledPaymentTotal">0 €</strong></div>
               <ul id="scheduledPayments" class="payment-list"><li><span>No hay pagos previstos.</span></li></ul>
             </article>
+            <article class="payment-card payment-schedule">
+              <div class="payment-schedule-head"><h3>Pagos con Stripe</h3><span>Facturas y reembolsos</span></div>
+              <ul id="stripePayments" class="payment-list"><li><span>Abre esta sección para consultar tus pagos.</span></li></ul>
+            </article>
             <article class="payment-card">
               <h3>Seguridad</h3>
               <p>Los pagos reales irán por proveedor externo con tokenización. AtlasIQ no guardará números de tarjeta.</p>
@@ -522,7 +528,7 @@
           </div>
           <form id="bookingFilters" class="booking-filters">
             <label>Destino o idioma<input name="destination" placeholder="Roma, Tokio, español..."></label>
-            <label>Tipo<select name="type"><option value="">Todo</option><option value="guide">Guías turísticos</option><option value="flight">Vuelos</option><option value="hotel">Hoteles</option><option value="insurance">Seguros de viaje</option><option value="rental">Coches y motos</option><option value="package">Vuelo + hotel</option></select></label>
+            <label>Tipo<select name="type"><option value="">Todo</option><option value="guide">Guías turísticos</option><option value="free-tour">Free tours</option><option value="excursion">Excursiones</option><option value="flight">Vuelos</option><option value="hotel">Hoteles</option><option value="insurance">Seguros de viaje</option><option value="rental">Coches y motos</option><option value="package">Vuelo + hotel</option></select></label>
             <label>Entrada<input name="start" type="date"></label>
             <label>Salida<input name="end" type="date"></label>
             <label>Viajeros<input name="travelers" type="number" min="1" max="9" value="2"></label>
@@ -744,6 +750,6 @@
         window.AtlasIQPages.show(button.dataset.pageTarget);
       });
     </script>
-    <script type="module" src="src/app/main.js?v=20260710-country-images"></script>
+    <script type="module" src="src/app/main.js?v=20260818-stripe-results"></script>
   </body>
 </html>
