@@ -1,5 +1,5 @@
-import { currentUser } from "../app/storage.js";
 import { createCheckout } from "../services/payments-api.js";
+import { addFavorite, favorites, removeFavorite } from "../services/user-data-api.js";
 
 const offers = [
   { id: "guide-rome", type: "guide", destination: "Roma", title: "Lucia, guía local", detail: "Español, italiano e inglés · centro histórico y Vaticano", price: 95, unit: "4 horas", rating: 4.9 },
@@ -25,7 +25,7 @@ const offers = [
 
 const typeLabels = { guide: "Guía local", "free-tour": "Free tour", excursion: "Excursión", hotel: "Hotel", insurance: "Seguro", rental: "Coche o moto", flight: "Vuelo", package: "Vuelo + hotel" };
 const checkoutProducts = new Set(["guide-rome", "guide-tokyo", "guide-marrakech", "excursion-rome", "excursion-bali", "insurance-basic", "insurance-plus"]);
-const key = "atlasiq-saved-offers";
+let saved = [];
 
 export function mountBookingsRoute() {
   document.querySelector("#bookingFilters").addEventListener("input", renderOffers);
@@ -34,7 +34,7 @@ export function mountBookingsRoute() {
   document.querySelector("#bookingOffers").addEventListener("click", startCheckout);
   document.querySelector("#savedOffers").addEventListener("click", removeOffer);
   renderOffers();
-  renderSaved();
+  loadSaved();
 }
 
 function renderOffers() {
@@ -52,11 +52,14 @@ function offerCard(offer, filters) {
   </article>`;
 }
 
-function saveOffer(event) {
+async function saveOffer(event) {
   const button = event.target.closest("[data-save-offer]");
   if (!button) return;
-  const saved = savedIds();
-  if (!saved.includes(button.dataset.saveOffer)) saveIds([...saved, button.dataset.saveOffer]);
+  if (!saved.some((item) => item.offerId === button.dataset.saveOffer)) {
+    const result = await addFavorite(button.dataset.saveOffer);
+    if (result.error) return button.textContent = result.error;
+    saved = [result, ...saved];
+  }
   button.textContent = "Guardado";
   renderSaved();
 }
@@ -72,17 +75,22 @@ async function startCheckout(event) {
   button.textContent = result.error || "No disponible";
 }
 
-function removeOffer(event) {
+async function removeOffer(event) {
   const button = event.target.closest("[data-remove-offer]");
   if (!button) return;
-  saveIds(savedIds().filter((id) => id !== button.dataset.removeOffer));
+  const item = saved.find((favorite) => favorite.offerId === button.dataset.removeOffer);
+  if (item) {
+    const result = await removeFavorite(item.id);
+    if (result.error) return;
+    saved = saved.filter((favorite) => favorite.id !== item.id);
+  }
   renderSaved();
 }
 
 function renderSaved() {
-  const saved = savedIds().map((id) => offers.find((offer) => offer.id === id)).filter(Boolean);
-  document.querySelector("#savedOfferCount").textContent = saved.length;
-  document.querySelector("#savedOffers").innerHTML = saved.length ? saved.map((offer) => `<li><span><strong>${offer.title}</strong><small>${offer.destination} · ${offer.price} €</small></span><button class="link-button" type="button" data-remove-offer="${offer.id}">Quitar</button></li>`).join("") : "<li>No has guardado opciones.</li>";
+  const selected = saved.map((item) => offers.find((offer) => offer.id === item.offerId)).filter(Boolean);
+  document.querySelector("#savedOfferCount").textContent = selected.length;
+  document.querySelector("#savedOffers").innerHTML = selected.length ? selected.map((offer) => `<li><span><strong>${offer.title}</strong><small>${offer.destination} · ${offer.price} €</small></span><button class="link-button" type="button" data-remove-offer="${offer.id}">Quitar</button></li>`).join("") : "<li>No has guardado opciones.</li>";
 }
 
 export function offerMatches(offer, filters) {
@@ -110,17 +118,8 @@ export function providerUrl(offer, filters = {}) {
   return urls[offer.type];
 }
 
-function savedIds() {
-  try {
-    const email = currentUser()?.email || "guest";
-    const all = JSON.parse(localStorage.getItem(key) || "{}");
-    return Array.isArray(all[email]) ? all[email] : [];
-  } catch { return []; }
-}
-
-function saveIds(ids) {
-  const email = currentUser()?.email || "guest";
-  let all = {};
-  try { all = JSON.parse(localStorage.getItem(key) || "{}"); } catch {}
-  localStorage.setItem(key, JSON.stringify({ ...all, [email]: ids }));
+async function loadSaved() {
+  const result = await favorites();
+  saved = Array.isArray(result) ? result : [];
+  renderSaved();
 }

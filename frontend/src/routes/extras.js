@@ -1,6 +1,7 @@
 import { showPage } from "../app/pages.js";
 import { createTripFromDestination } from "../services/trips.js";
 import { renderTrips } from "./trips.js";
+import { addReview, reviews as loadReviews } from "../services/user-data-api.js";
 
 const cruiseContinents = {
   "Mediterráneo clásico": "europe",
@@ -10,17 +11,16 @@ const cruiseContinents = {
   "Mini crucero mediterráneo": "europe",
   "Danubio cultural": "europe"
 };
-const reviewsKey = "atlasiq-reviews";
+let reviews = [];
 
 export function mountExtrasRoute() {
   document.querySelector("#reviewForm").addEventListener("submit", submitReview);
   document.querySelector("#cruiseGrid").addEventListener("click", saveCruise);
   document.querySelector("#cruiseFilters").addEventListener("change", filterCruises);
-  savedReviews().forEach(renderReview);
-  updateReviewSummary();
+  renderSavedReviews();
 }
 
-function submitReview(event) {
+async function submitReview(event) {
   event.preventDefault();
   const form = event.currentTarget;
   const data = new FormData(form);
@@ -29,15 +29,16 @@ function submitReview(event) {
   const reviewText = data.get("reviewText").trim();
   if (!name || !trip || !reviewText) return showReviewMessage("Completa nombre, viaje y reseña.", true);
 
-  const review = { name, trip, text: reviewText, rating: data.get("reviewRating") };
-  localStorage.setItem(reviewsKey, JSON.stringify([review, ...savedReviews()].slice(0, 20)));
+  const review = await addReview({ name, destination: trip, text: reviewText, rating: Number.parseInt(data.get("reviewRating"), 10) });
+  if (review.error) return showReviewMessage(review.error, true);
+  reviews = [review, ...reviews];
   renderReview(review);
   updateReviewSummary();
   form.reset();
   showReviewMessage("Reseña publicada.");
 }
 
-function renderReview({ name, trip, text, rating }) {
+function renderReview({ name, trip, destination, text, rating }) {
   const card = document.createElement("article");
   card.className = "review-card";
   const content = document.createElement("p");
@@ -45,22 +46,19 @@ function renderReview({ name, trip, text, rating }) {
   const route = document.createElement("span");
   content.textContent = `“${text}”`;
   author.textContent = name;
-  route.textContent = `${trip} · ${String(rating).includes("estrella") ? rating : `${rating} estrellas`}`;
+  route.textContent = `${trip || destination} · ${rating} estrellas`;
   card.append(content, author, route);
   document.querySelector(".reviews-grid").prepend(card);
 }
 
-function savedReviews() {
-  try {
-    const reviews = JSON.parse(localStorage.getItem(reviewsKey) || "[]");
-    return Array.isArray(reviews) ? reviews : [];
-  } catch {
-    return [];
-  }
+async function renderSavedReviews() {
+  const result = await loadReviews();
+  reviews = Array.isArray(result) ? result : [];
+  reviews.forEach(renderReview);
+  updateReviewSummary();
 }
 
 function updateReviewSummary() {
-  const reviews = savedReviews();
   const total = 14.7 + reviews.reduce((sum, review) => sum + (Number.parseInt(review.rating, 10) || 0), 0);
   const count = 3 + reviews.length;
   document.querySelector("#reviewSummary").textContent = `${(total / count).toFixed(1).replace(".", ",")}/5 · ${count} reseñas`;

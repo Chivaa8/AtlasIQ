@@ -3,6 +3,7 @@ import { showPage } from "../app/pages.js";
 import { currentUser } from "../app/storage.js";
 import { labels } from "../schemas/user.js";
 import { parseTripPreferences } from "../schemas/trip-preferences.js";
+import { savePreferences } from "../services/user-data-api.js";
 import { recommendDestinations } from "../services/recommendation.js";
 import { createTripFromDestination } from "../services/trips.js";
 import { renderTrips } from "./trips.js";
@@ -92,6 +93,7 @@ export function renderRecommendations(force = false) {
   if (!user || !form) return;
 
   const preferences = parseTripPreferences(new FormData(form), user.origin);
+  savePreferences(preferences);
   const preferencesKey = JSON.stringify(preferences);
   if (!force && preferencesKey === lastPreferencesKey) return;
   lastPreferencesKey = preferencesKey;

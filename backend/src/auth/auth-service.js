@@ -41,7 +41,32 @@ export function createAuthService(store, secret = process.env.AUTH_SECRET || "de
       users[index] = nextUser;
       await store.write(users);
       return session(nextUser, secret, tokenTtlMs);
+    },
+    async updatePreferences(token, preferences) {
+      const payload = verifyToken(token, secret);
+      const users = await store.read();
+      const index = users.findIndex((item) => item.id === payload.sub);
+      if (index === -1) throw new Error("invalid token");
+      users[index] = { ...users[index], preferences: normalizePreferences(preferences), updatedAt: new Date().toISOString() };
+      await store.write(users);
+      return publicUser(users[index]);
     }
+  };
+}
+
+function normalizePreferences(input) {
+  return {
+    tripScope: String(input?.tripScope || "any").slice(0, 30),
+    continent: String(input?.continent || "any").slice(0, 30),
+    landscape: String(input?.landscape || "any").slice(0, 30),
+    environment: String(input?.environment || "any").slice(0, 30),
+    vibe: String(input?.vibe || "any").slice(0, 30),
+    flightMode: String(input?.flightMode || "any").slice(0, 30),
+    rentalMode: String(input?.rentalMode || "any").slice(0, 30),
+    days: Math.min(365, Math.max(1, Number(input?.days || 1))),
+    budget: Math.max(0, Number(input?.budget || 0)),
+    stopoverDays: Math.min(30, Math.max(0, Number(input?.stopoverDays || 0))),
+    goal: String(input?.goal || "").trim().slice(0, 500)
   };
 }
 

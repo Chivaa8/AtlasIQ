@@ -18,3 +18,4 @@ backend/data/*.json
 /*.css
 /backend-*.json
 /.tools/
+/backups/

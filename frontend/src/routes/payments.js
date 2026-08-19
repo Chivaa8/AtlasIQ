@@ -1,8 +1,8 @@
-import { currentUser } from "../app/storage.js";
 import { paymentHistory, requestRefund } from "../services/payments-api.js";
+import { addPlannedPayment, plannedPayments, updatePlannedPayment } from "../services/user-data-api.js";
 
-const key = "atlasiq-payments";
 const euro = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
+let scheduled = [];
 
 export function mountPaymentsRoute() {
   document.querySelector("#paymentForm").addEventListener("submit", addPayment);
@@ -29,23 +29,28 @@ async function refundPayment(event) {
   await renderStripePayments();
 }
 
-function addPayment(event) {
+async function addPayment(event) {
   event.preventDefault();
-  const data = new FormData(event.currentTarget);
+  const form = event.currentTarget;
+  const data = new FormData(form);
   const payment = createPayment(data.get("concept"), data.get("amount"), data.get("date"));
   if (!payment) return showMessage("Completa un concepto, un importe positivo y una fecha.", true);
-  savePayments([payment, ...payments()]);
-  event.currentTarget.reset();
+  const result = await addPlannedPayment(payment);
+  if (result.error) return showMessage(result.error, true);
+  scheduled = [result, ...scheduled];
+  form.reset();
   showMessage("Pago previsto añadido.");
   renderPayments();
 }
 
-function togglePayment(event) {
+async function togglePayment(event) {
   const button = event.target.closest("[data-payment-id]");
   if (!button) return;
-  savePayments(payments().map((payment) => payment.id === button.dataset.paymentId
-    ? { ...payment, completed: !payment.completed }
-    : payment));
+  const payment = scheduled.find((item) => item.id === button.dataset.paymentId);
+  if (!payment) return;
+  const result = await updatePlannedPayment(payment.id, { ...payment, completed: !payment.completed });
+  if (result.error) return showMessage(result.error, true);
+  scheduled = scheduled.map((item) => item.id === result.id ? result : item);
   renderPayments();
 }
 
@@ -55,9 +60,11 @@ export function createPayment(concept, amount, date) {
   return { id: crypto.randomUUID(), concept: String(concept).trim(), amount: value, date: String(date), completed: false };
 }
 
-function renderPayments() {
+async function renderPayments() {
   const list = document.querySelector("#scheduledPayments");
-  const entries = payments();
+  const result = await plannedPayments();
+  if (Array.isArray(result)) scheduled = result;
+  const entries = scheduled;
   list.innerHTML = entries.length ? entries.map((payment) => `
     <li class="${payment.completed ? "completed" : ""}">
       <span><strong>${escapeHtml(payment.concept)}</strong><small>${formatDate(payment.date)}</small></span>
@@ -66,24 +73,6 @@ function renderPayments() {
     </li>
   `).join("") : "<li><span>No hay pagos previstos.</span></li>";
   document.querySelector("#scheduledPaymentTotal").textContent = euro.format(entries.filter((payment) => !payment.completed).reduce((sum, payment) => sum + payment.amount, 0));
-}
-
-function payments() {
-  try {
-    const email = currentUser()?.email;
-    const all = JSON.parse(localStorage.getItem(key) || "{}");
-    return email && Array.isArray(all[email]) ? all[email] : [];
-  } catch {
-    return [];
-  }
-}
-
-function savePayments(entries) {
-  const email = currentUser()?.email;
-  if (!email) return;
-  let all = {};
-  try { all = JSON.parse(localStorage.getItem(key) || "{}"); } catch {}
-  localStorage.setItem(key, JSON.stringify({ ...all, [email]: entries }));
 }
 
 function showMessage(text, error = false) {

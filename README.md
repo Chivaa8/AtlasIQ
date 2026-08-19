@@ -51,6 +51,23 @@ AtlasIQ usa Stripe Checkout alojado y no almacena datos de tarjeta.
 
 Sin esas variables, AtlasIQ sigue funcionando pero bloquea correctamente la creación de pagos reales.
 
+## PostgreSQL local
+
+```powershell
+docker compose up -d postgres
+node --env-file-if-exists=.env backend/scripts/db.js migrate
+node --env-file-if-exists=.env backend/scripts/db.js import-json
+```
+
+Configura `DATABASE_URL` como en `.env.example`. Con esa variable, la API usa PostgreSQL; sin ella conserva el modo JSON para pruebas aisladas.
+
+- `db:migrate`: crea o actualiza el esquema.
+- `db:import-json`: importa los usuarios, viajes, acompañantes y pagos existentes.
+- `db:backup`: guarda una copia en `backups/atlasiq.json`.
+- `db:restore -- backups/atlasiq.json`: restaura esa copia.
+
+PostgreSQL guarda usuarios, viajes, acompañantes, reservas, pagos, reseñas, favoritos, preferencias y pagos previstos. Las relaciones eliminan automáticamente los datos dependientes cuando se elimina un usuario o viaje.
+
 ## Roadmap corto
 
 1. Mejorar el MVP visual en `frontend/`.

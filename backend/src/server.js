@@ -4,19 +4,34 @@ import { pathToFileURL } from "node:url";
 import { createAuthService } from "./auth/auth-service.js";
 import { createPasswordReset, confirmPasswordReset } from "./auth/password-reset.js";
 import { createJsonStore } from "./storage/json-store.js";
+import { createPostgresPool, createPostgresStore } from "./storage/postgres-store.js";
 import { createTripService } from "./trips/trip-service.js";
 import { createStripePaymentService } from "./payments/stripe-payments.js";
+import { createUserDataService } from "./data/user-data-service.js";
 
 export function createServer({
-  userStore = createJsonStore(resolve("backend/data/users.json"), []),
-  tripStore = createJsonStore(resolve("backend/data/trips.json"), []),
-  paymentStore = createJsonStore(resolve("backend/data/payments.json"), []),
+  userStore,
+  tripStore,
+  paymentStore,
+  reviewStore,
+  favoriteStore,
+  plannedPaymentStore,
   sendMail = realSendMail,
   stripeOptions
 } = {}) {
+  const defaults = defaultStores();
+  userStore ||= defaults.userStore;
+  tripStore ||= defaults.tripStore;
+  paymentStore ||= defaults.paymentStore;
+  reviewStore ||= defaults.reviewStore;
+  favoriteStore ||= defaults.favoriteStore;
+  plannedPaymentStore ||= defaults.plannedPaymentStore;
   const auth = createAuthService(userStore);
   const trips = createTripService(tripStore);
   const payments = createStripePaymentService(paymentStore, stripeOptions);
+  const reviews = createUserDataService(reviewStore, reviewInput);
+  const favorites = createUserDataService(favoriteStore, favoriteInput);
+  const plannedPayments = createUserDataService(plannedPaymentStore, plannedPaymentInput);
 
   return http.createServer(async (request, response) => {
     const origin = request.headers.origin;
@@ -25,7 +40,7 @@ export function createServer({
       response.setHeader("Vary", "Origin");
     }
     response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    response.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS");
+    response.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
     if (request.method === "OPTIONS") return json(response, 204, {});
     const url = new URL(request.url, `http://${request.headers.host}`);
 
@@ -78,6 +93,30 @@ export function createServer({
       return action(response, () => auth.updateProfile(bearerToken(request), body));
     }
 
+    if (request.method === "PATCH" && url.pathname === "/api/auth/me/preferences") {
+      const body = await readJson(request);
+      return action(response, () => auth.updatePreferences(bearerToken(request), body));
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/reviews") {
+      return action(response, () => reviews.list());
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/reviews") {
+      const body = await readJson(request);
+      return action(response, async () => reviews.create((await auth.me(bearerToken(request))).email, body));
+    }
+
+    const collections = { favorites, "planned-payments": plannedPayments };
+    const collectionMatch = url.pathname.match(/^\/api\/(favorites|planned-payments)(?:\/([^/]+))?$/);
+    if (collectionMatch) {
+      const service = collections[collectionMatch[1]];
+      if (request.method === "GET" && !collectionMatch[2]) return action(response, async () => service.list((await auth.me(bearerToken(request))).email));
+      if (request.method === "POST" && !collectionMatch[2]) return action(response, async () => service.create((await auth.me(bearerToken(request))).email, await readJson(request)));
+      if (request.method === "PATCH" && collectionMatch[2]) return action(response, async () => service.update((await auth.me(bearerToken(request))).email, collectionMatch[2], await readJson(request)));
+      if (request.method === "DELETE" && collectionMatch[2]) return action(response, async () => service.remove((await auth.me(bearerToken(request))).email, collectionMatch[2]));
+    }
+
     if (request.method === "GET" && url.pathname === "/api/trips") {
       return action(response, async () => trips.list((await auth.me(bearerToken(request))).email));
     }
@@ -128,6 +167,43 @@ export function createServer({
 
     json(response, 404, { error: "Not found" });
   });
+}
+
+function defaultStores() {
+  const pool = createPostgresPool();
+  return pool ? {
+    userStore: createPostgresStore(pool, "users"),
+    tripStore: createPostgresStore(pool, "trips"),
+    paymentStore: createPostgresStore(pool, "payments"),
+    reviewStore: createPostgresStore(pool, "reviews"),
+    favoriteStore: createPostgresStore(pool, "favorites"),
+    plannedPaymentStore: createPostgresStore(pool, "planned_payments")
+  } : {
+    userStore: createJsonStore(resolve("backend/data/users.json"), []),
+    tripStore: createJsonStore(resolve("backend/data/trips.json"), []),
+    paymentStore: createJsonStore(resolve("backend/data/payments.json"), []),
+    reviewStore: createJsonStore(resolve("backend/data/reviews.json"), []),
+    favoriteStore: createJsonStore(resolve("backend/data/favorites.json"), []),
+    plannedPaymentStore: createJsonStore(resolve("backend/data/planned-payments.json"), [])
+  };
+}
+
+function reviewInput(input) {
+  const text = String(input?.text || "").trim().slice(0, 1000);
+  if (!text) throw new Error("review text is required");
+  return { name: String(input.name || "Viajero").trim().slice(0, 80), destination: String(input.destination || "").trim().slice(0, 120), rating: Math.min(5, Math.max(1, Number(input.rating || 5))), text };
+}
+
+function favoriteInput(input) {
+  const offerId = String(input?.offerId || "").trim().slice(0, 120);
+  if (!offerId) throw new Error("offerId is required");
+  return { offerId };
+}
+
+function plannedPaymentInput(input) {
+  const amount = Number(input?.amount);
+  if (!String(input?.concept || "").trim() || !Number.isFinite(amount) || amount <= 0 || !/^\d{4}-\d{2}-\d{2}$/.test(String(input?.date || ""))) throw new Error("planned payment is invalid");
+  return { concept: String(input.concept).trim().slice(0, 120), amount, date: input.date, completed: Boolean(input.completed) };
 }
 
 const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;

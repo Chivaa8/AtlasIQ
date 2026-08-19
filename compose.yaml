@@ -1,0 +1,24 @@
+name: atlasiq
+
+services:
+  postgres:
+    container_name: AtlasIQ-postgres
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: atlasiq
+      POSTGRES_USER: atlasiq
+      POSTGRES_PASSWORD: atlasiq_local
+    ports:
+      - "5432:5432"
+    volumes:
+      - atlasiq-postgres:/var/lib/postgresql/data
+      - ./backend/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U atlasiq -d atlasiq"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  atlasiq-postgres:
+    name: AtlasIQ-postgres-data
