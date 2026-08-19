@@ -8,6 +8,8 @@ import { createPostgresPool, createPostgresStore } from "./storage/postgres-stor
 import { createTripService } from "./trips/trip-service.js";
 import { createStripePaymentService } from "./payments/stripe-payments.js";
 import { createUserDataService } from "./data/user-data-service.js";
+import { createRateLimiter } from "./security/rate-limit.js";
+import { securityEmail } from "./email/templates.js";
 
 export function createServer({
   userStore,
@@ -17,7 +19,8 @@ export function createServer({
   favoriteStore,
   plannedPaymentStore,
   sendMail = realSendMail,
-  stripeOptions
+  stripeOptions,
+  authSecret = process.env.AUTH_SECRET
 } = {}) {
   const defaults = defaultStores();
   userStore ||= defaults.userStore;
@@ -26,14 +29,20 @@ export function createServer({
   reviewStore ||= defaults.reviewStore;
   favoriteStore ||= defaults.favoriteStore;
   plannedPaymentStore ||= defaults.plannedPaymentStore;
-  const auth = createAuthService(userStore);
+  const auth = createAuthService(userStore, authSecret);
   const trips = createTripService(tripStore);
   const payments = createStripePaymentService(paymentStore, stripeOptions);
   const reviews = createUserDataService(reviewStore, reviewInput);
   const favorites = createUserDataService(favoriteStore, favoriteInput);
   const plannedPayments = createUserDataService(plannedPaymentStore, plannedPaymentInput);
+  const authLimited = createRateLimiter({ limit: 5 });
+  const abuseLimited = createRateLimiter({ limit: 20, windowMs: 60 * 60 * 1000 });
 
-  return http.createServer(async (request, response) => {
+  return http.createServer((request, response) => handleRequest(request, response).catch((error) => {
+    if (!response.headersSent) json(response, 400, { error: error.message });
+  }));
+
+  async function handleRequest(request, response) {
     const origin = request.headers.origin;
     if (["http://127.0.0.1:8022", "http://localhost:8022"].includes(origin)) {
       response.setHeader("Access-Control-Allow-Origin", origin);
@@ -41,6 +50,10 @@ export function createServer({
     }
     response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
     response.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
+    response.setHeader("X-Content-Type-Options", "nosniff");
+    response.setHeader("X-Frame-Options", "DENY");
+    response.setHeader("Referrer-Policy", "no-referrer");
+    response.setHeader("Cache-Control", "no-store");
     if (request.method === "OPTIONS") return json(response, 204, {});
     const url = new URL(request.url, `http://${request.headers.host}`);
 
@@ -62,6 +75,7 @@ export function createServer({
 
     if (request.method === "POST" && url.pathname === "/api/auth/register") {
       const body = await readJson(request);
+      if (body.website || authLimited(`register:${clientIp(request)}`)) return json(response, 429, { error: "too many attempts" });
       return action(response, () => auth.register(body));
     }
 
@@ -81,7 +95,24 @@ export function createServer({
 
     if (request.method === "POST" && url.pathname === "/api/auth/login") {
       const body = await readJson(request);
+      if (authLimited(`login:${clientIp(request)}:${String(body.email || "").toLowerCase()}`)) return json(response, 429, { error: "too many attempts" });
       return action(response, () => auth.login(body));
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/auth/refresh") return action(response, () => auth.refresh(bearerToken(request)));
+    if (request.method === "POST" && url.pathname === "/api/auth/logout") return action(response, () => auth.revoke(bearerToken(request)));
+
+    if (request.method === "POST" && url.pathname === "/api/auth/email-verification/request") {
+      return action(response, async () => {
+        const verification = await auth.issueEmailVerification(bearerToken(request));
+        await sendMail({ to: verification.email, subject: "Verifica tu cuenta de AtlasIQ", ...securityEmail({ title: "Verifica tu correo", intro: "Confirma que esta dirección pertenece a tu cuenta de AtlasIQ.", code: verification.code, expiry: "30 minutos" }) });
+        return { sent: true };
+      });
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/auth/email-verification/confirm") {
+      const body = await readJson(request);
+      return action(response, () => auth.verifyEmail(body.email, body.code));
     }
 
     if (request.method === "GET" && url.pathname === "/api/auth/me") {
@@ -104,6 +135,7 @@ export function createServer({
 
     if (request.method === "POST" && url.pathname === "/api/reviews") {
       const body = await readJson(request);
+      if (abuseLimited(`review:${clientIp(request)}`)) return json(response, 429, { error: "too many attempts" });
       return action(response, async () => reviews.create((await auth.me(bearerToken(request))).email, body));
     }
 
@@ -155,18 +187,19 @@ export function createServer({
 
     if (request.method === "POST" && url.pathname === "/api/password-reset/request") {
       const body = await readJson(request);
-      await createPasswordReset({ email: body.email, sendMail });
+      if (authLimited(`reset:${clientIp(request)}:${String(body.email || "").toLowerCase()}`)) return json(response, 429, { error: "too many attempts" });
+      if (await auth.hasUser(body.email)) await createPasswordReset({ email: body.email, sendMail }).catch(() => {});
       return json(response, 200, {});
     }
 
     if (request.method === "POST" && url.pathname === "/api/password-reset/confirm") {
       const body = await readJson(request);
-      const error = confirmPasswordReset(body);
+      const error = await confirmPasswordReset({ ...body, updatePassword: auth.updatePassword });
       return error ? json(response, 400, { error }) : json(response, 200, {});
     }
 
     json(response, 404, { error: "Not found" });
-  });
+  }
 }
 
 function defaultStores() {
@@ -228,7 +261,8 @@ async function realSendMail(message) {
       from: process.env.EMAIL_FROM,
       to: message.to,
       subject: message.subject,
-      text: message.text
+      text: message.text,
+      html: message.html
     })
   });
   if (!response.ok) throw new Error("Email provider rejected the password reset email.");
@@ -284,11 +318,21 @@ function bearerToken(request) {
 }
 
 async function readJson(request) {
+  if (!String(request.headers["content-type"] || "").toLowerCase().startsWith("application/json")) throw new Error("Content-Type must be application/json");
   return JSON.parse(await readBody(request) || "{}");
 }
 
 async function readBody(request) {
   const chunks = [];
-  for await (const chunk of request) chunks.push(chunk);
+  let size = 0;
+  for await (const chunk of request) {
+    size += chunk.length;
+    if (size > 1024 * 1024) throw new Error("request body is too large");
+    chunks.push(chunk);
+  }
   return Buffer.concat(chunks).toString();
+}
+
+function clientIp(request) {
+  return String(request.socket.remoteAddress || "unknown");
 }

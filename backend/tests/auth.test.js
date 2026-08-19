@@ -11,20 +11,22 @@ const memoryStore = {
   }
 };
 
-const auth = createAuthService(memoryStore, "test-secret");
+const auth = createAuthService(memoryStore, "test-secret-that-is-longer-than-32-characters");
 const registered = await auth.register({
   name: "Oriol",
   email: "ORIOL@example.com",
-  password: "secret123",
+  password: "Secret123",
   origin: "europe"
 });
 
 assert.equal(registered.user.email, "oriol@example.com");
 assert.ok(registered.token);
+assert.equal(await auth.hasUser("ORIOL@example.com"), true);
+assert.equal(await auth.hasUser("missing@example.com"), false);
 assert.equal(memoryStore.data[0].password, undefined);
 assert.ok(memoryStore.data[0].passwordHash);
 
-const logged = await auth.login({ email: "oriol@example.com", password: "secret123" });
+const logged = await auth.login({ email: "oriol@example.com", password: "Secret123" });
 assert.equal(logged.user.id, registered.user.id);
 
 const me = await auth.me(logged.token);
@@ -52,19 +54,26 @@ const withPassword = await auth.updateProfile(profiled.token, {
   currency: "EUR",
   email: "oriol@example.com",
   phone: "+34 600 000 000",
-  password: "newsecret"
+  password: "Newsecret1"
 });
 
-const relogged = await auth.login({ email: "oriol@example.com", password: "newsecret" });
+const relogged = await auth.login({ email: "oriol@example.com", password: "Newsecret1" });
 assert.equal(relogged.user.id, withPassword.user.id);
 
+const verification = await auth.issueEmailVerification(relogged.token);
+assert.equal((await auth.verifyEmail("oriol@example.com", verification.code)).emailVerified, true);
+const refreshed = await auth.refresh(relogged.token);
+assert.ok(refreshed.token);
+await auth.revoke(refreshed.token);
+await assert.rejects(() => auth.me(refreshed.token), /invalid token/);
+
 await assert.rejects(
-  () => auth.login({ email: "oriol@example.com", password: "secret123" }),
+  () => auth.login({ email: "oriol@example.com", password: "Secret123" }),
   /invalid credentials/
 );
 
-const expiringAuth = createAuthService(memoryStore, "test-secret", -1);
-const expired = await expiringAuth.login({ email: "oriol@example.com", password: "newsecret" });
+const expiringAuth = createAuthService(memoryStore, "test-secret-that-is-longer-than-32-characters", -1);
+const expired = await expiringAuth.login({ email: "oriol@example.com", password: "Newsecret1" });
 await assert.rejects(
   () => expiringAuth.me(expired.token),
   /token expired/

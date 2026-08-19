@@ -68,6 +68,26 @@ Configura `DATABASE_URL` como en `.env.example`. Con esa variable, la API usa Po
 
 PostgreSQL guarda usuarios, viajes, acompañantes, reservas, pagos, reseñas, favoritos, preferencias y pagos previstos. Las relaciones eliminan automáticamente los datos dependientes cuando se elimina un usuario o viaje.
 
+## Seguridad local
+
+- Genera `AUTH_SECRET` con al menos 32 caracteres; la API no arranca sin él.
+- Acceso, registro, recuperación y reseñas tienen límites de frecuencia.
+- Las sesiones duran siete días, pueden renovarse y se revocan al cerrar sesión o cambiar la contraseña.
+- Las cuentas nuevas admiten verificación de correo mediante código de 30 minutos.
+- Las peticiones JSON están limitadas a 1 MB y la API añade cabeceras defensivas.
+- La web incluye consentimiento de cookies, privacidad y condiciones de uso.
+
+La limitación de frecuencia está en memoria para el desarrollo local. En producción con varias instancias debe compartirse mediante Redis o el proxy de entrada.
+
+## Correo con Resend
+
+1. Añade en Resend un subdominio propio, por ejemplo `send.atlasiq.com`.
+2. Copia en tu proveedor DNS los registros SPF y DKIM indicados y espera a que el dominio aparezca como verificado.
+3. Crea una clave restringida exclusivamente al envío de correo.
+4. Guarda la clave en `RESEND_API_KEY` y usa `EMAIL_FROM=AtlasIQ <noreply@tu-subdominio>`.
+
+La recuperación siempre devuelve la misma respuesta exista o no la cuenta. Los códigos se guardan como hash, caducan en 15 minutos y solo se envía uno por minuto. Resend recibe una plantilla HTML y una alternativa de texto. Las claves y códigos nunca deben guardarse en Git.
+
 ## Roadmap corto
 
 1. Mejorar el MVP visual en `frontend/`.

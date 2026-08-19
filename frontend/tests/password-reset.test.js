@@ -24,11 +24,11 @@ globalThis.fetch = async (url, options) => {
 };
 
 assert.equal(await requestPasswordReset("missing@example.com"), "");
-assert.equal(calls.length, 0);
+assert.equal(calls.length, 1);
 assert.equal(await requestPasswordReset("test@example.com"), "");
-assert.equal(await resetPassword({ email: "test@example.com", token: "123456", password: "newpass" }), "");
-assert.equal(calls[0].body.email, "test@example.com");
+assert.equal(await resetPassword({ email: "test@example.com", token: "123456", password: "Newpass1" }), "");
+assert.equal(calls[0].body.email, "missing@example.com");
 assert.equal(calls[1].body.email, "test@example.com");
-assert.equal(JSON.parse(localStorage.getItem("atlasiq-users"))[0].password, "newpass");
+assert.equal(calls[2].body.email, "test@example.com");
 
 console.log("AtlasIQ password reset API check passed");

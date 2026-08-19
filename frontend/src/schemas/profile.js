@@ -14,7 +14,7 @@ export function validateProfile(profile, existingUsers = []) {
   if (!/^[A-Z0-9]{6,12}$/i.test(profile.documentId)) return "DNI o pasaporte inválido.";
   if (!/^\+?[0-9 ]{7,16}$/.test(profile.phone)) return "Número de teléfono inválido.";
   if (!currencies[profile.currency]) return "Moneda invalida.";
-  if (profile.password && profile.password.length < 6) return "La nueva contraseña necesita al menos 6 caracteres.";
+  if (profile.password && (profile.password.length < 8 || !/[a-z]/.test(profile.password) || !/[A-Z]/.test(profile.password) || !/\d/.test(profile.password))) return "La nueva contraseña necesita 8 caracteres, mayúscula, minúscula y número.";
   return "";
 }
 

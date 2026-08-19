@@ -8,6 +8,7 @@ import { mountExtrasRoute } from "../routes/extras.js";
 import { mountPaymentsRoute } from "../routes/payments.js";
 import { mountToolsRoute } from "../routes/tools.js";
 import { mountBookingsRoute } from "../routes/bookings.js";
+import { mountLegal } from "./legal.js";
 
 mountAuthRoute();
 mountPageNavigation();
@@ -19,6 +20,7 @@ mountExtrasRoute();
 mountPaymentsRoute();
 mountToolsRoute();
 mountBookingsRoute();
+mountLegal();
 showApp();
 showCheckoutResult();
 

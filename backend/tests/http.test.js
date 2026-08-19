@@ -3,7 +3,8 @@ import { createServer } from "../src/server.js";
 
 const userStore = memoryStore();
 const tripStore = memoryStore();
-const server = createServer({ userStore, tripStore, sendMail: async () => {} });
+const sentEmails = [];
+const server = createServer({ userStore, tripStore, sendMail: async (email) => sentEmails.push(email), authSecret: "test-secret-that-is-longer-than-32-characters" });
 
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const baseUrl = `http://127.0.0.1:${server.address().port}`;
@@ -15,12 +16,17 @@ try {
   const registered = await request("POST", "/api/auth/register", {
     name: "Oriol",
     email: "oriol@example.com",
-    password: "secret123",
+    password: "Secret123",
     origin: "europe"
   });
 
   assert.ok(registered.token);
   assert.equal(registered.user.email, "oriol@example.com");
+
+  await request("POST", "/api/password-reset/request", { email: "missing@example.com" });
+  assert.equal(sentEmails.length, 0);
+  await request("POST", "/api/password-reset/request", { email: "oriol@example.com" });
+  assert.equal(sentEmails.length, 1);
 
   const trip = await request("POST", "/api/trips", {
     destination: {

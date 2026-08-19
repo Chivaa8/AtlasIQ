@@ -1,9 +1,9 @@
 import { $ } from "../app/dom.js";
-import { currentUser, endSession, saveSession } from "../app/storage.js";
+import { currentUser, endSession, saveSession, sessionToken } from "../app/storage.js";
 import { showPage } from "../app/pages.js";
 import { isProfileComplete } from "../schemas/profile.js";
 import { labels, validateUser } from "../schemas/user.js";
-import { loginUser, registerUser } from "../services/auth-api.js";
+import { confirmEmailVerification, loginUser, registerUser, requestEmailVerification, revokeSession } from "../services/auth-api.js";
 import { requestPasswordReset, resetPassword } from "../services/password-reset.js";
 import { renderRecommendations } from "./advisor.js?v=20260710-country-images";
 import { renderProfile } from "./profile.js";
@@ -20,10 +20,13 @@ export function mountAuthRoute() {
   document.querySelectorAll("[data-auth-mode]").forEach((button) => {
     button.addEventListener("click", () => showAuthMode(button.dataset.authMode));
   });
-  $("#logoutBtn").addEventListener("click", () => {
+  $("#logoutBtn").addEventListener("click", async () => {
+    await revokeSession();
     endSession();
     showApp();
   });
+  $("#verifyEmailBtn").addEventListener("click", requestVerification);
+  $("#verifyEmailForm").addEventListener("submit", confirmVerification);
 }
 
 export function showApp() {
@@ -35,6 +38,7 @@ export function showApp() {
   $("#accountName").textContent = user.name || "Mi cuenta";
   $("#accountEmail").textContent = user.email || "";
   $("#accountAvatar").src = user.photo || defaultAvatar();
+  $("#verifyEmailBtn").classList.toggle("hidden", user.emailVerified !== false);
   renderProfile();
   const needsProfile = !isProfileComplete(user);
   $("#appView").classList.toggle("onboarding", needsProfile);
@@ -66,13 +70,30 @@ async function register(event) {
     email: data.get("email").trim().toLowerCase(),
     password: data.get("password"),
     origin: data.get("origin"),
-    currency: "EUR"
+    currency: "EUR",
+    website: data.get("website")
   };
   const error = validateUser(nextUser);
   if (error) return showMessage(error, "error");
   const result = await registerUser(nextUser);
   if (result.error) return showMessage(normalizeAuthError(result.error), "error");
   saveSession(result.session);
+  showApp();
+}
+
+async function requestVerification() {
+  const result = await requestEmailVerification();
+  if (result.error) return alert(result.error);
+  $("#verifyEmailDialog").showModal();
+}
+
+async function confirmVerification(event) {
+  event.preventDefault();
+  const user = currentUser();
+  const result = await confirmEmailVerification(user.email, new FormData(event.currentTarget).get("code").trim());
+  if (result.error) return $("#verifyEmailMessage").textContent = result.error;
+  saveSession({ token: sessionToken(), user: result.session });
+  $("#verifyEmailDialog").close();
   showApp();
 }
 
@@ -123,7 +144,8 @@ function normalizeAuthError(error) {
     "email already registered": "Ese email ya está registrado.",
     "invalid credentials": "Correo o contraseña incorrectos.",
     "email is invalid": "Correo inválido.",
-    "password must have 6 characters": "La contraseña debe tener al menos 6 caracteres.",
+    "password is too weak": "La contraseña necesita 8 caracteres, mayúscula, minúscula y número.",
+    "too many attempts": "Demasiados intentos. Espera unos minutos antes de volver a probar.",
     "origin is required": "Selecciona tu origen."
   };
   return messages[error] || error;

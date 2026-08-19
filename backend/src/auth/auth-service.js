@@ -5,8 +5,13 @@ const keyLength = 32;
 const digest = "sha256";
 const defaultTokenTtlMs = 7 * 24 * 60 * 60 * 1000;
 
-export function createAuthService(store, secret = process.env.AUTH_SECRET || "dev-secret-change-me", tokenTtlMs = defaultTokenTtlMs) {
+export function createAuthService(store, secret = process.env.AUTH_SECRET, tokenTtlMs = defaultTokenTtlMs) {
+  if (String(secret || "").length < 32) throw new Error("AUTH_SECRET must have at least 32 characters");
   return {
+    async hasUser(email) {
+      const normalizedEmail = String(email || "").trim().toLowerCase();
+      return (await store.read()).some((item) => item.email === normalizedEmail);
+    },
     async register(input) {
       const user = normalizeUser(input);
       const users = await store.read();
@@ -15,6 +20,8 @@ export function createAuthService(store, secret = process.env.AUTH_SECRET || "de
         ...user,
         id: crypto.randomUUID(),
         passwordHash: hashPassword(input.password),
+        emailVerified: false,
+        sessionVersion: 0,
         createdAt: new Date().toISOString()
       };
       await store.write([...users, saved]);
@@ -27,16 +34,14 @@ export function createAuthService(store, secret = process.env.AUTH_SECRET || "de
       return session(user, secret, tokenTtlMs);
     },
     async me(token) {
-      const payload = verifyToken(token, secret);
-      const user = (await store.read()).find((item) => item.id === payload.sub);
-      if (!user) throw new Error("invalid token");
+      const user = await authenticatedUser(store, token, secret);
       return publicUser(user);
     },
     async updateProfile(token, profile) {
       const payload = verifyToken(token, secret);
       const users = await store.read();
       const index = users.findIndex((item) => item.id === payload.sub);
-      if (index === -1) throw new Error("invalid token");
+      if (index === -1 || Number(users[index].sessionVersion || 0) !== Number(payload.ver || 0)) throw new Error("invalid token");
       const nextUser = normalizeProfile(users[index], profile, users);
       users[index] = nextUser;
       await store.write(users);
@@ -46,10 +51,47 @@ export function createAuthService(store, secret = process.env.AUTH_SECRET || "de
       const payload = verifyToken(token, secret);
       const users = await store.read();
       const index = users.findIndex((item) => item.id === payload.sub);
-      if (index === -1) throw new Error("invalid token");
+      if (index === -1 || Number(users[index].sessionVersion || 0) !== Number(payload.ver || 0)) throw new Error("invalid token");
       users[index] = { ...users[index], preferences: normalizePreferences(preferences), updatedAt: new Date().toISOString() };
       await store.write(users);
       return publicUser(users[index]);
+    },
+    async refresh(token) {
+      return session(await authenticatedUser(store, token, secret), secret, tokenTtlMs);
+    },
+    async revoke(token) {
+      const user = await authenticatedUser(store, token, secret);
+      const users = await store.read();
+      const index = users.findIndex((item) => item.id === user.id);
+      users[index] = { ...users[index], sessionVersion: Number(users[index].sessionVersion || 0) + 1 };
+      await store.write(users);
+      return { revoked: true };
+    },
+    async issueEmailVerification(token) {
+      const user = await authenticatedUser(store, token, secret);
+      const users = await store.read();
+      const index = users.findIndex((item) => item.id === user.id);
+      const code = randomBytes(24).toString("base64url");
+      users[index] = { ...users[index], emailVerificationHash: hashVerification(code), emailVerificationExpiresAt: Date.now() + 30 * 60 * 1000 };
+      await store.write(users);
+      return { email: user.email, code };
+    },
+    async verifyEmail(email, code) {
+      const users = await store.read();
+      const index = users.findIndex((item) => item.email === String(email || "").trim().toLowerCase());
+      const user = users[index];
+      if (!user || user.emailVerificationExpiresAt < Date.now() || user.emailVerificationHash !== hashVerification(code)) throw new Error("verification code is invalid");
+      users[index] = { ...user, emailVerified: true, emailVerificationHash: undefined, emailVerificationExpiresAt: undefined };
+      await store.write(users);
+      return publicUser(users[index]);
+    },
+    async updatePassword(email, password) {
+      if (!strongPassword(password)) throw new Error("password is too weak");
+      const users = await store.read();
+      const index = users.findIndex((item) => item.email === String(email || "").trim().toLowerCase());
+      if (index === -1) return;
+      users[index] = { ...users[index], passwordHash: hashPassword(password), sessionVersion: Number(users[index].sessionVersion || 0) + 1, updatedAt: new Date().toISOString() };
+      await store.write(users);
     }
   };
 }
@@ -79,7 +121,7 @@ function normalizeUser(input) {
   };
   if (!user.name) throw new Error("name is required");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) throw new Error("email is invalid");
-  if (String(input.password || "").length < 6) throw new Error("password must have 6 characters");
+  if (!strongPassword(input.password)) throw new Error("password is too weak");
   if (!user.origin) throw new Error("origin is required");
   return user;
 }
@@ -88,7 +130,7 @@ function normalizeProfile(current, profile, users) {
   const email = String(profile.email || current.email).trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("email is invalid");
   if (users.some((user) => user.id !== current.id && user.email === email)) throw new Error("email already registered");
-  if (profile.password && String(profile.password).length < 6) throw new Error("password must have 6 characters");
+  if (profile.password && !strongPassword(profile.password)) throw new Error("password is too weak");
 
   return {
     ...current,
@@ -133,12 +175,28 @@ function verifyPassword(password, stored) {
 }
 
 function session(user, secret, tokenTtlMs = defaultTokenTtlMs) {
-  return { token: signToken({ sub: user.id, email: user.email, exp: Date.now() + tokenTtlMs }, secret), user: publicUser(user) };
+  return { token: signToken({ sub: user.id, email: user.email, ver: Number(user.sessionVersion || 0), exp: Date.now() + tokenTtlMs }, secret), user: publicUser(user) };
 }
 
 function publicUser(user) {
-  const { passwordHash, ...safeUser } = user;
-  return safeUser;
+  const { passwordHash, emailVerificationHash, emailVerificationExpiresAt, sessionVersion, ...safeUser } = user;
+  return { ...safeUser, emailVerified: user.emailVerified !== false };
+}
+
+async function authenticatedUser(store, token, secret) {
+  const payload = verifyToken(token, secret);
+  const user = (await store.read()).find((item) => item.id === payload.sub);
+  if (!user || Number(user.sessionVersion || 0) !== Number(payload.ver || 0)) throw new Error("invalid token");
+  return user;
+}
+
+function hashVerification(code) {
+  return createHmac("sha256", "atlasiq-email-verification").update(String(code || "")).digest("hex");
+}
+
+function strongPassword(password) {
+  const value = String(password || "");
+  return value.length >= 8 && /[a-z]/.test(value) && /[A-Z]/.test(value) && /\d/.test(value);
 }
 
 function signToken(payload, secret) {

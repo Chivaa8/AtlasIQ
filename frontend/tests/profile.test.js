@@ -10,7 +10,7 @@ const validProfile = {
   currency: "EUR",
   email: "chiva@example.com",
   phone: "+34 600 000 000",
-  password: "secret1"
+  password: "Secret123"
 };
 
 assert.equal(validateProfile(validProfile, []), "");
