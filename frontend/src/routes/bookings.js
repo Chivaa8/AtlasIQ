@@ -1,5 +1,6 @@
 import { createCheckout } from "../services/payments-api.js";
 import { addFavorite, favorites, removeFavorite } from "../services/user-data-api.js";
+import { confirmAction, emptyState, notify, skeleton, withLoading } from "../app/ui.js";
 
 const offers = [
   { id: "guide-rome", type: "guide", destination: "Roma", title: "Lucia, guía local", detail: "Español, italiano e inglés · centro histórico y Vaticano", price: 95, unit: "4 horas", rating: 4.9 },
@@ -40,7 +41,7 @@ export function mountBookingsRoute() {
 function renderOffers() {
   const filters = Object.fromEntries(new FormData(document.querySelector("#bookingFilters")));
   const filtered = offers.filter((offer) => offerMatches(offer, filters));
-  document.querySelector("#bookingOffers").innerHTML = filtered.map((offer) => offerCard(offer, filters)).join("") || "<p class='trip-empty'>No hay opciones con esos filtros.</p>";
+  document.querySelector("#bookingOffers").innerHTML = filtered.map((offer) => offerCard(offer, filters)).join("") || emptyState("Sin resultados", "Prueba otro destino, fecha o tipo de reserva.");
   document.querySelector("#bookingCount").textContent = `${filtered.length} opciones`;
 }
 
@@ -56,9 +57,10 @@ async function saveOffer(event) {
   const button = event.target.closest("[data-save-offer]");
   if (!button) return;
   if (!saved.some((item) => item.offerId === button.dataset.saveOffer)) {
-    const result = await addFavorite(button.dataset.saveOffer);
+    const result = await withLoading(button, "Guardando...", () => addFavorite(button.dataset.saveOffer));
     if (result.error) return button.textContent = result.error;
     saved = [result, ...saved];
+    notify("Opción guardada.");
   }
   button.textContent = "Guardado";
   renderSaved();
@@ -78,11 +80,13 @@ async function startCheckout(event) {
 async function removeOffer(event) {
   const button = event.target.closest("[data-remove-offer]");
   if (!button) return;
+  if (!confirmAction("¿Quitar esta opción de tus guardados?")) return;
   const item = saved.find((favorite) => favorite.offerId === button.dataset.removeOffer);
   if (item) {
     const result = await removeFavorite(item.id);
-    if (result.error) return;
+    if (result.error) return notify(result.error, "error");
     saved = saved.filter((favorite) => favorite.id !== item.id);
+    notify("Opción eliminada de guardados.");
   }
   renderSaved();
 }
@@ -90,7 +94,7 @@ async function removeOffer(event) {
 function renderSaved() {
   const selected = saved.map((item) => offers.find((offer) => offer.id === item.offerId)).filter(Boolean);
   document.querySelector("#savedOfferCount").textContent = selected.length;
-  document.querySelector("#savedOffers").innerHTML = selected.length ? selected.map((offer) => `<li><span><strong>${offer.title}</strong><small>${offer.destination} · ${offer.price} €</small></span><button class="link-button" type="button" data-remove-offer="${offer.id}">Quitar</button></li>`).join("") : "<li>No has guardado opciones.</li>";
+  document.querySelector("#savedOffers").innerHTML = selected.length ? selected.map((offer) => `<li><span><strong>${offer.title}</strong><small>${offer.destination} · ${offer.price} €</small></span><button class="link-button" type="button" data-remove-offer="${offer.id}">Quitar</button></li>`).join("") : "<li><span>No has guardado opciones todavía.</span></li>";
 }
 
 export function offerMatches(offer, filters) {
@@ -119,7 +123,9 @@ export function providerUrl(offer, filters = {}) {
 }
 
 async function loadSaved() {
+  document.querySelector("#savedOffers").innerHTML = `<li>${skeleton(1)}</li>`;
   const result = await favorites();
+  if (result.error) notify(result.error, "error");
   saved = Array.isArray(result) ? result : [];
   renderSaved();
 }

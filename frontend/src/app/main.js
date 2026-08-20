@@ -1,15 +1,17 @@
-import { mountAdvisorRoute } from "../routes/advisor.js?v=20260710-country-images";
+import { mountAdvisorRoute } from "../routes/advisor.js?v=20260820-ux2";
 import { mountPageNavigation } from "./pages.js";
-import { mountAuthRoute, showApp } from "../routes/auth.js?v=20260710-country-images";
-import { mountProfileRoute } from "../routes/profile.js";
-import { mountTripDetailRoute } from "../routes/trip-detail.js";
-import { mountTripsRoute } from "../routes/trips.js";
-import { mountExtrasRoute } from "../routes/extras.js";
-import { mountPaymentsRoute } from "../routes/payments.js";
+import { mountAuthRoute, showApp } from "../routes/auth.js?v=20260820-ux2";
+import { mountProfileRoute } from "../routes/profile.js?v=20260820-ux2";
+import { mountTripDetailRoute } from "../routes/trip-detail.js?v=20260820-ux2";
+import { mountTripsRoute } from "../routes/trips.js?v=20260820-ux2";
+import { mountExtrasRoute } from "../routes/extras.js?v=20260820-ux2";
+import { mountPaymentsRoute } from "../routes/payments.js?v=20260820-ux2";
 import { mountToolsRoute } from "../routes/tools.js";
-import { mountBookingsRoute } from "../routes/bookings.js";
+import { mountBookingsRoute } from "../routes/bookings.js?v=20260820-ux2";
 import { mountLegal } from "./legal.js";
+import { mountUi, notify } from "./ui.js?v=20260820-ux2";
 
+mountUi();
 mountAuthRoute();
 mountPageNavigation();
 mountAdvisorRoute();
@@ -34,6 +36,7 @@ function showCheckoutResult() {
     : "Pago cancelado. No se ha realizado ningún cargo.";
   message.classList.toggle("success", result === "success");
   message.classList.toggle("error", result !== "success");
+  notify(message.textContent, result === "success" ? "success" : "error");
   url.searchParams.delete("payment");
   url.searchParams.delete("session_id");
   history.replaceState(null, "", url);

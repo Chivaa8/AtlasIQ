@@ -9,3 +9,4 @@ await import("./payments.test.js");
 await import("./tools.test.js");
 await import("./bookings.test.js");
 await import("./exchange.test.js");
+await import("./ui.test.js");

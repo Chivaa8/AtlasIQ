@@ -2,6 +2,7 @@ import { showPage } from "../app/pages.js";
 import { createTripFromDestination } from "../services/trips.js";
 import { renderTrips } from "./trips.js";
 import { addReview, reviews as loadReviews } from "../services/user-data-api.js";
+import { notify, withLoading } from "../app/ui.js";
 
 const cruiseContinents = {
   "Mediterráneo clásico": "europe",
@@ -29,13 +30,14 @@ async function submitReview(event) {
   const reviewText = data.get("reviewText").trim();
   if (!name || !trip || !reviewText) return showReviewMessage("Completa nombre, viaje y reseña.", true);
 
-  const review = await addReview({ name, destination: trip, text: reviewText, rating: Number.parseInt(data.get("reviewRating"), 10) });
+  const review = await withLoading(event.submitter, "Publicando...", () => addReview({ name, destination: trip, text: reviewText, rating: Number.parseInt(data.get("reviewRating"), 10) }));
   if (review.error) return showReviewMessage(review.error, true);
   reviews = [review, ...reviews];
   renderReview(review);
   updateReviewSummary();
   form.reset();
   showReviewMessage("Reseña publicada.");
+  notify("Reseña publicada.");
 }
 
 function renderReview({ name, trip, destination, text, rating }) {
@@ -80,21 +82,18 @@ async function saveCruise(event) {
   if (!button) return;
   const card = button.closest(".cruise-card");
   const name = card.querySelector("h3").textContent.trim();
-  button.disabled = true;
-  button.textContent = "Guardando...";
-  const trip = await createTripFromDestination({
+  const trip = await withLoading(button, "Guardando...", () => createTripFromDestination({
     name,
     city: card.querySelector("dd").textContent.trim(),
     continent: cruiseContinents[name] || "unknown",
     estimatedCost: parsePrice(card.querySelectorAll("dd")[1].textContent),
     highlights: card.querySelector("p").textContent.split(",").map((stop) => stop.trim())
-  });
+  }));
   if (!trip) {
-    button.disabled = false;
-    button.textContent = "Reintentar";
-    return;
+    return notify("No se pudo guardar el crucero.", "error");
   }
   await renderTrips();
+  notify("Crucero guardado como viaje.");
   showPage("tripsPanel");
 }
 
@@ -103,6 +102,7 @@ function showReviewMessage(text, error = false) {
   message.textContent = text;
   message.classList.toggle("error", error);
   message.classList.toggle("success", !error);
+  if (error) notify(text, "error");
 }
 
 export function parsePrice(value) {

@@ -6,6 +6,7 @@ import { labels } from "../schemas/user.js";
 import { saveProfile } from "../services/profile.js";
 import { renderRecommendations } from "./advisor.js";
 import { renderTrips } from "./trips.js";
+import { confirmAction, notify, withLoading } from "../app/ui.js";
 
 export function mountProfileRoute() {
   $("#profileForm").addEventListener("submit", submitProfile);
@@ -36,8 +37,9 @@ export function renderProfile() {
 
 async function submitProfile(event) {
   event.preventDefault();
+  const button = event.submitter;
   const data = new FormData(event.currentTarget);
-  const error = await saveProfile(profilePayload({
+  const error = await withLoading(button, "Guardando...", () => saveProfile(profilePayload({
     id: currentUser().id,
     name: data.get("name").trim(),
     firstSurname: data.get("firstSurname").trim(),
@@ -48,7 +50,7 @@ async function submitProfile(event) {
     phone: data.get("phone").trim(),
     password: data.get("password"),
     photo: data.get("photo")
-  }));
+  })));
   if (error) return showProfileMessage(error);
   const user = currentUser();
   $("#userSummary").textContent = `${user.name} - origen: ${labels[user.origin]}`;
@@ -60,6 +62,7 @@ async function submitProfile(event) {
   renderTrips();
   renderRecommendations();
   showPage("homeDashboard");
+  notify("Perfil guardado.");
 }
 
 function previewPhoto(event) {
@@ -94,11 +97,13 @@ async function addPersonalDocument(event) {
 async function removePersonalDocument(event) {
   const button = event.target.closest("[data-remove-document]");
   if (!button) return;
+  if (!confirmAction("¿Eliminar este documento personal? Esta acción no se puede deshacer.")) return;
   const personalDocuments = (currentUser().personalDocuments || []).filter((document) => document.id !== button.dataset.removeDocument);
   const error = await saveProfile(profilePayload({ personalDocuments }));
   if (error) return showProfileMessage(error);
   renderProfile();
   showProfileMessage("Documento eliminado.");
+  notify("Documento eliminado.");
 }
 
 function renderPersonalDocuments(documents) {

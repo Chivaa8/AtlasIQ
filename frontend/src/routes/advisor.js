@@ -7,6 +7,7 @@ import { savePreferences } from "../services/user-data-api.js";
 import { recommendDestinations } from "../services/recommendation.js";
 import { createTripFromDestination } from "../services/trips.js";
 import { renderTrips } from "./trips.js";
+import { notify, withLoading } from "../app/ui.js";
 
 const euro = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
 let lastPreferencesKey = "";
@@ -81,9 +82,13 @@ export function mountAdvisorRoute() {
   $("#results").addEventListener("click", async (event) => {
     const button = event.target.closest("[data-create-trip]");
     if (!button) return;
-    await createTripFromDestination(JSON.parse(decodeURIComponent(button.dataset.createTrip)));
-    await renderTrips();
-    showPage("tripsPanel");
+    await withLoading(button, "Creando viaje...", async () => {
+      const trip = await createTripFromDestination(JSON.parse(decodeURIComponent(button.dataset.createTrip)));
+      if (!trip) return notify("No se pudo crear el viaje. Comprueba la conexión.", "error");
+      await renderTrips();
+      notify("Viaje creado.");
+      showPage("tripsPanel");
+    });
   });
 }
 

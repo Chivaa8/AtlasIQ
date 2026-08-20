@@ -3,6 +3,7 @@ import { showPage } from "../app/pages.js";
 import { buildItinerary } from "../schemas/itinerary.js";
 import { convertCurrency, tripSplit } from "../schemas/trip.js";
 import { addCompanion, addDocument, addExpense, toggleChecklistItem, toggleDocumentReady, tripById } from "../services/trips.js";
+import { notify, withLoading } from "../app/ui.js";
 
 const euro = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
 let activeTripId = "";
@@ -26,29 +27,29 @@ export function mountTripDetailRoute() {
   $("#expenseForm").addEventListener("submit", async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    const trip = await addExpense(activeTripId, {
+    const trip = await withLoading(event.submitter, "Añadiendo...", () => addExpense(activeTripId, {
       concept: data.get("concept").trim(),
       amount: data.get("amount")
-    });
+    }));
     event.currentTarget.reset();
-    if (trip) showTripDetail(trip.id);
+    if (trip) { showTripDetail(trip.id); notify("Gasto añadido."); } else notify("No se pudo añadir el gasto.", "error");
   });
   $("#companionForm").addEventListener("submit", async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    const trip = await addCompanion(activeTripId, data.get("name"));
+    const trip = await withLoading(event.submitter, "Añadiendo...", () => addCompanion(activeTripId, data.get("name")));
     event.currentTarget.reset();
-    if (trip) showTripDetail(trip.id);
+    if (trip) { showTripDetail(trip.id); notify("Acompañante añadido."); } else notify("No se pudo añadir el acompañante.", "error");
   });
   $("#documentForm").addEventListener("submit", async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    const trip = await addDocument(activeTripId, {
+    const trip = await withLoading(event.submitter, "Añadiendo...", () => addDocument(activeTripId, {
       type: data.get("type"),
       name: data.get("name")
-    });
+    }));
     event.currentTarget.reset();
-    if (trip) showTripDetail(trip.id);
+    if (trip) { showTripDetail(trip.id); notify("Documento añadido."); } else notify("No se pudo añadir el documento.", "error");
   });
   $("#currencyAmount").addEventListener("input", renderActiveConverter);
   $("#currencyTarget").addEventListener("change", renderActiveConverter);

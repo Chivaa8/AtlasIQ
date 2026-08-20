@@ -1,5 +1,6 @@
 import { paymentHistory, requestRefund } from "../services/payments-api.js";
 import { addPlannedPayment, plannedPayments, updatePlannedPayment } from "../services/user-data-api.js";
+import { confirmAction, notify, skeleton, withLoading } from "../app/ui.js";
 
 const euro = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
 let scheduled = [];
@@ -15,6 +16,7 @@ export function mountPaymentsRoute() {
 
 async function renderStripePayments() {
   const list = document.querySelector("#stripePayments");
+  list.innerHTML = `<li>${skeleton(1)}</li>`;
   const result = await paymentHistory();
   if (result.error) return list.innerHTML = `<li><span>${escapeHtml(result.error)}</span></li>`;
   list.innerHTML = result.length ? result.map((payment) => `<li><span><strong>${escapeHtml(payment.productId)}</strong><small>${statusLabel(payment.status)}</small></span><strong>${euro.format(payment.amount / 100)}</strong>${payment.status === "paid" ? `<button class="link-button" type="button" data-refund-payment="${payment.id}">Solicitar reembolso</button>` : ""}</li>`).join("") : "<li><span>No hay pagos reales.</span></li>";
@@ -23,9 +25,10 @@ async function renderStripePayments() {
 async function refundPayment(event) {
   const button = event.target.closest("[data-refund-payment]");
   if (!button) return;
-  button.disabled = true;
-  const result = await requestRefund(button.dataset.refundPayment);
-  if (result.error) { button.disabled = false; button.textContent = result.error; return; }
+  if (!confirmAction("¿Solicitar el reembolso de este pago?")) return;
+  const result = await withLoading(button, "Solicitando...", () => requestRefund(button.dataset.refundPayment));
+  if (result.error) return notify(result.error, "error");
+  notify("Reembolso solicitado.");
   await renderStripePayments();
 }
 
@@ -40,6 +43,7 @@ async function addPayment(event) {
   scheduled = [result, ...scheduled];
   form.reset();
   showMessage("Pago previsto añadido.");
+  notify("Pago previsto añadido.");
   renderPayments();
 }
 
@@ -52,6 +56,7 @@ async function togglePayment(event) {
   if (result.error) return showMessage(result.error, true);
   scheduled = scheduled.map((item) => item.id === result.id ? result : item);
   renderPayments();
+  notify(result.completed ? "Pago marcado como completado." : "Pago reabierto.");
 }
 
 export function createPayment(concept, amount, date) {
@@ -62,6 +67,7 @@ export function createPayment(concept, amount, date) {
 
 async function renderPayments() {
   const list = document.querySelector("#scheduledPayments");
+  list.innerHTML = `<li>${skeleton(1)}</li>`;
   const result = await plannedPayments();
   if (Array.isArray(result)) scheduled = result;
   const entries = scheduled;

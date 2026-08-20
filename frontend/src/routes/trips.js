@@ -2,6 +2,7 @@ import { $ } from "../app/dom.js";
 import { currentUser } from "../app/storage.js";
 import { archiveTrip, tripsForCurrentUser } from "../services/trips.js";
 import { showTripDetail } from "./trip-detail.js";
+import { confirmAction, emptyState, notify, skeleton, withLoading } from "../app/ui.js";
 
 const euro = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
 
@@ -9,8 +10,13 @@ export function mountTripsRoute() {
   $("#tripList").addEventListener("click", async (event) => {
     const archiveButton = event.target.closest("[data-archive-trip]");
     if (archiveButton) {
-      await archiveTrip(archiveButton.dataset.archiveTrip);
-      return renderTrips();
+      if (!confirmAction("¿Archivar este viaje? Podrás conservar sus datos, pero dejará de aparecer entre los viajes activos.")) return;
+      return withLoading(archiveButton, "Archivando...", async () => {
+        const trip = await archiveTrip(archiveButton.dataset.archiveTrip);
+        if (!trip) return notify("No se pudo archivar el viaje.", "error");
+        notify("Viaje archivado.");
+        await renderTrips();
+      });
     }
     const button = event.target.closest("[data-trip-id]");
     if (button) showTripDetail(button.dataset.tripId);
@@ -21,6 +27,7 @@ export function mountTripsRoute() {
 export async function renderTrips() {
   const user = currentUser();
   if (!user) return;
+  $("#tripList").innerHTML = skeleton();
   const trips = (await tripsForCurrentUser()).filter((trip) => !trip.archivedAt);
   $("#tripCount").textContent = `${trips.length} viajes`;
   $("#tripList").innerHTML = trips.length ? trips.map(tripTemplate).join("") : emptyTemplate();
@@ -68,10 +75,5 @@ function tripTemplate(trip) {
 }
 
 function emptyTemplate() {
-  return `
-    <article class="trip-empty">
-      <h3>Aún no tienes viajes.</h3>
-      <p>Elige una recomendación y crea tu primer viaje.</p>
-    </article>
-  `;
+  return emptyState("Aún no tienes viajes", "Elige una recomendación y crea tu primer itinerario.", "advisor");
 }

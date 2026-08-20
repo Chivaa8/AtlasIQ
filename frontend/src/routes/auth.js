@@ -3,11 +3,12 @@ import { currentUser, endSession, saveSession, sessionToken } from "../app/stora
 import { showPage } from "../app/pages.js";
 import { isProfileComplete } from "../schemas/profile.js";
 import { labels, validateUser } from "../schemas/user.js";
-import { confirmEmailVerification, loginUser, registerUser, requestEmailVerification, revokeSession } from "../services/auth-api.js";
+import { confirmEmailVerification, loginUser, registerUser, requestEmailVerification, revokeSession } from "../services/auth-api.js?v=20260820-ux2";
 import { requestPasswordReset, resetPassword } from "../services/password-reset.js";
 import { renderRecommendations } from "./advisor.js?v=20260710-country-images";
 import { renderProfile } from "./profile.js";
 import { renderTrips } from "./trips.js";
+import { notify, withLoading } from "../app/ui.js";
 
 export function mountAuthRoute() {
   $("#loginTab").addEventListener("click", () => showAuthMode("login"));
@@ -20,8 +21,8 @@ export function mountAuthRoute() {
   document.querySelectorAll("[data-auth-mode]").forEach((button) => {
     button.addEventListener("click", () => showAuthMode(button.dataset.authMode));
   });
-  $("#logoutBtn").addEventListener("click", async () => {
-    await revokeSession();
+  $("#logoutBtn").addEventListener("click", async (event) => {
+    await withLoading(event.currentTarget, "Cerrando...", revokeSession);
     endSession();
     showApp();
   });
@@ -75,15 +76,16 @@ async function register(event) {
   };
   const error = validateUser(nextUser);
   if (error) return showMessage(error, "error");
-  const result = await registerUser(nextUser);
+  const result = await withLoading(event.submitter, "Creando cuenta...", () => registerUser(nextUser));
   if (result.error) return showMessage(normalizeAuthError(result.error), "error");
   saveSession(result.session);
   showApp();
 }
 
 async function requestVerification() {
-  const result = await requestEmailVerification();
-  if (result.error) return alert(result.error);
+  const button = $("#verifyEmailBtn");
+  const result = await withLoading(button, "Enviando...", requestEmailVerification);
+  if (result.error) return notify(result.error, "error");
   $("#verifyEmailDialog").showModal();
 }
 
@@ -100,10 +102,10 @@ async function confirmVerification(event) {
 async function login(event) {
   event.preventDefault();
   const data = new FormData(event.currentTarget);
-  const result = await loginUser({
+  const result = await withLoading(event.submitter, "Entrando...", () => loginUser({
     email: data.get("email").trim().toLowerCase(),
     password: data.get("password")
-  });
+  }));
   if (result.error) return showMessage(normalizeAuthError(result.error), "error");
   saveSession(result.session);
   showApp();
@@ -112,7 +114,7 @@ async function login(event) {
 async function requestReset(event) {
   event.preventDefault();
   const email = new FormData(event.currentTarget).get("email").trim().toLowerCase();
-  const error = await requestPasswordReset(email);
+  const error = await withLoading(event.submitter, "Enviando...", () => requestPasswordReset(email));
   if (error) return showMessage(error, "error");
   $("#resetForm").elements.email.value = email;
   showAuthMode("reset");
@@ -122,11 +124,11 @@ async function requestReset(event) {
 async function submitReset(event) {
   event.preventDefault();
   const data = new FormData(event.currentTarget);
-  const error = await resetPassword({
+  const error = await withLoading(event.submitter, "Actualizando...", () => resetPassword({
     email: data.get("email").trim().toLowerCase(),
     token: data.get("token").trim(),
     password: data.get("password")
-  });
+  }));
   if (error) return showMessage(error, "error");
   showAuthMode("login");
   showMessage("Contraseña actualizada. Ya puedes entrar.", "success");
@@ -137,6 +139,7 @@ function showMessage(text, type = "") {
   message.textContent = text;
   message.classList.toggle("error", type === "error");
   message.classList.toggle("success", type === "success");
+  if (text && type) notify(text, type);
 }
 
 function normalizeAuthError(error) {
