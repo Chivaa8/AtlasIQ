@@ -11,13 +11,16 @@
 
 Chrome, Edge y WebKit pasan también en Windows. El Firefox headless de Playwright no inicia en este equipo por un error SWGL del propio binario; Firefox queda cubierto por el agente Linux de CI.
 
-## Pendiente para el punto 8
+## Punto 8 preparado
 
-- Elegir dominio, proveedor de alojamiento y entorno de producción.
-- HTTPS, secretos del entorno, base de datos y copias de seguridad gestionadas.
-- Logs, métricas, alertas, analítica privada, SEO, sitemap y robots.
-- Pruebas finales en Safari real de macOS/iOS y dispositivos físicos.
-- Presupuestos de rendimiento con datos y tráfico de producción.
+- Contenedores separados para frontend, API y PostgreSQL mediante `compose.production.yaml`.
+- Proxy de `/api`, compresión, caché y cabeceras seguras en Nginx.
+- Secretos únicamente por variables de entorno y base de datos sin puerto público.
+- Healthcheck, logs JSON y métricas Prometheus en `/api/metrics`.
+- SEO, metadatos sociales, manifest, sitemap y robots.
+- Guía de despliegue, HTTPS, copias, monitorización y analítica privada en `docs/deployment.md`.
+
+Para publicar todavía hay que escoger proveedor y dominio, cargar los secretos reales y crear las alertas externas. Safari real, dispositivos físicos y presupuestos con tráfico solo pueden validarse después del despliegue.
 
 ## Pendiente para el punto 9
 

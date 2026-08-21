@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#0c7168"/>
+  <circle cx="1010" cy="80" r="300" fill="#65cbbf" opacity=".35"/>
+  <text x="100" y="290" fill="white" font-family="Arial, sans-serif" font-size="110" font-weight="700">AtlasIQ</text>
+  <text x="105" y="380" fill="#d9fffa" font-family="Arial, sans-serif" font-size="42">Tu próximo viaje empieza aquí.</text>
+</svg>

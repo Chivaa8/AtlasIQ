@@ -12,6 +12,8 @@ const baseUrl = `http://127.0.0.1:${server.address().port}`;
 try {
   const corsResponse = await fetch(`${baseUrl}/api/health`, { headers: { Origin: "http://localhost:8022" } });
   assert.equal(corsResponse.headers.get("access-control-allow-origin"), "http://localhost:8022");
+  const metricsResponse = await fetch(`${baseUrl}/api/metrics`);
+  assert.match(await metricsResponse.text(), /atlasiq_requests_total \d+/);
 
   const registered = await request("POST", "/api/auth/register", {
     name: "Oriol",

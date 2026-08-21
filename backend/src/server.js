@@ -22,6 +22,7 @@ export function createServer({
   stripeOptions,
   authSecret = process.env.AUTH_SECRET
 } = {}) {
+  const metrics = { requests: 0, errors: 0, startedAt: Date.now() };
   const defaults = defaultStores();
   userStore ||= defaults.userStore;
   tripStore ||= defaults.tripStore;
@@ -38,13 +39,24 @@ export function createServer({
   const authLimited = createRateLimiter({ limit: 5 });
   const abuseLimited = createRateLimiter({ limit: 20, windowMs: 60 * 60 * 1000 });
 
-  return http.createServer((request, response) => handleRequest(request, response).catch((error) => {
-    if (!response.headersSent) json(response, 400, { error: error.message });
-  }));
+  return http.createServer((request, response) => {
+    const startedAt = Date.now();
+    metrics.requests += 1;
+    response.once("finish", () => {
+      if (response.statusCode >= 500) metrics.errors += 1;
+      log("request", { method: request.method, path: request.url?.split("?")[0], status: response.statusCode, durationMs: Date.now() - startedAt });
+    });
+    handleRequest(request, response).catch((error) => {
+      metrics.errors += 1;
+      log("request_error", { message: error.message });
+      if (!response.headersSent) json(response, 500, { error: "Internal server error" });
+    });
+  });
 
   async function handleRequest(request, response) {
     const origin = request.headers.origin;
-    if (["http://127.0.0.1:8022", "http://localhost:8022"].includes(origin)) {
+    const allowedOrigins = new Set(["http://127.0.0.1:8022", "http://localhost:8022", ...String(process.env.APP_URL || "").split(",").map((value) => value.trim()).filter(Boolean)]);
+    if (allowedOrigins.has(origin)) {
       response.setHeader("Access-Control-Allow-Origin", origin);
       response.setHeader("Vary", "Origin");
     }
@@ -66,7 +78,11 @@ export function createServer({
     }
 
     if (request.method === "GET" && url.pathname === "/api/health") {
-      return json(response, 200, { status: "ok", service: "AtlasIQ API" });
+      return json(response, 200, { status: "ok", service: "AtlasIQ API", uptimeSeconds: Math.floor(process.uptime()) });
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/metrics") {
+      return text(response, 200, `atlasiq_requests_total ${metrics.requests}\natlasiq_errors_total ${metrics.errors}\natlasiq_uptime_seconds ${Math.floor((Date.now() - metrics.startedAt) / 1000)}\n`);
     }
 
     if (request.method === "GET" && url.pathname === "/api/openapi.json") {
@@ -243,7 +259,7 @@ const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv
 if (isMain) {
   const port = Number(process.env.PORT || 8023);
   createServer().listen(port, () => {
-    console.log(`AtlasIQ backend on http://127.0.0.1:${port}`);
+    log("server_started", { port });
   });
 }
 
@@ -271,6 +287,15 @@ async function realSendMail(message) {
 function json(response, status, payload) {
   response.writeHead(status, { "Content-Type": "application/json" });
   response.end(JSON.stringify(payload));
+}
+
+function text(response, status, payload) {
+  response.writeHead(status, { "Content-Type": "text/plain; version=0.0.4; charset=utf-8" });
+  response.end(payload);
+}
+
+function log(event, details = {}) {
+  console.log(JSON.stringify({ timestamp: new Date().toISOString(), level: "info", event, ...details }));
 }
 
 async function action(response, handler) {

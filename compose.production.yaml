@@ -1,0 +1,55 @@
+name: atlasiq
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-atlasiq}
+      POSTGRES_USER: ${POSTGRES_USER:-atlasiq}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Configura POSTGRES_PASSWORD}
+    volumes:
+      - atlasiq-postgres:/var/lib/postgresql/data
+      - ./backend/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    environment:
+      AUTH_SECRET: ${AUTH_SECRET:?Configura AUTH_SECRET}
+      APP_URL: ${APP_URL:?Configura APP_URL}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-atlasiq}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-atlasiq}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8023/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8022:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  atlasiq-postgres:
+    name: AtlasIQ-postgres-production

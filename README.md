@@ -98,6 +98,10 @@ pnpm test:e2e
 
 La suite recorre registro, perfil, viajes y reservas; también revisa accesibilidad, móvil, cabeceras y carga en Chrome, Edge, Firefox y WebKit/Safari. GitHub Actions ejecuta todo automáticamente. La cobertura y los pendientes están en `docs/quality.md`.
 
+## Producción
+
+AtlasIQ incluye imágenes separadas para frontend y API y un `compose.production.yaml` con PostgreSQL privado, healthchecks y reinicio automático. La guía completa de dominio, HTTPS, secretos, copias, métricas, alertas y analítica está en `docs/deployment.md`.
+
 ## Roadmap corto
 
 1. Mejorar el MVP visual en `frontend/`.
