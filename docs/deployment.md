@@ -17,7 +17,7 @@ Publica el puerto 8022 detrás del proxy HTTPS gestionado del proveedor (Cloudfl
 - Envía los logs JSON de Docker al servicio de logs del proveedor.
 - Vigila `/api/health` cada minuto y alerta tras tres fallos.
 - Recoge `/api/metrics` con Prometheus o el monitor compatible del proveedor.
-- Programa `npm run db:backup` diariamente y conserva copias cifradas fuera del servidor; prueba una restauración mensualmente.
+- Programa `pnpm db:backup` diariamente y conserva copias cifradas fuera del servidor; prueba una restauración mensualmente.
 - Para analítica privada, conecta una instancia de Umami o Plausible y carga su script solo después de que el visitante acepte analítica.
 - Configura en Stripe el webhook público `https://tu-dominio/api/payments/webhook`.
 

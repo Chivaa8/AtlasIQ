@@ -22,12 +22,13 @@ Chrome, Edge y WebKit pasan también en Windows. El Firefox headless de Playwrig
 
 Para publicar todavía hay que escoger proveedor y dominio, cargar los secretos reales y crear las alertas externas. Safari real, dispositivos físicos y presupuestos con tráfico solo pueden validarse después del despliegue.
 
-## Pendiente para el punto 9
+## Punto 9 cubierto
 
-- Retirar el antiguo `package-lock.json`; el proyecto ya usa pnpm como gestor principal.
-- Corregir la instalación global rota de npm en Windows.
-- Revisar archivos históricos de la raíz y conservar solo la estructura vigente.
-- Añadir licencia y documentación completa de despliegue y recuperación.
+- Retirado `package-lock.json`; pnpm es el único gestor del proyecto.
+- Reparado npm en Windows apartando su instalación global dañada de forma recuperable.
+- Eliminadas las iteraciones antiguas y los archivos aplanados duplicados de la raíz.
+- Conservada únicamente la estructura vigente de aplicación, pruebas, CI y documentación.
+- Añadida licencia MIT y documentación actualizada de arquitectura, despliegue y recuperación.
 
 ## Pendientes funcionales posteriores
 

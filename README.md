@@ -6,11 +6,11 @@ AtlasIQ es un planificador inteligente de viajes pensado como proyecto portfolio
 
 ```text
 AtlasIQ/
-  frontend/   MVP web usable
-  backend/    API futura
-  ml/         recomendador futuro
-  infra/      Docker y despliegue
-  docs/       arquitectura y decisiones
+  frontend/   Aplicación web y pruebas unitarias
+  backend/    API Node.js, PostgreSQL y pruebas
+  tests/      Pruebas E2E de navegador
+  docs/       Arquitectura, calidad y despliegue
+  .github/    Integración continua
 ```
 
 ## Ejecutar
@@ -22,22 +22,22 @@ Puertos fijos:
 - Tests HTTP backend: `http://127.0.0.1:8024`
 
 ```bash
-npm run dev:backend
-npm run dev:frontend
+pnpm dev:backend
+pnpm dev:frontend
 ```
 
 ## Correo de recuperación
 
 1. Copia `.env.example` como `.env`.
 2. Añade tu clave de Resend y un remitente verificado.
-3. Reinicia `npm run dev:backend`.
+3. Reinicia `pnpm dev:backend`.
 
 Para probar sin dominio propio, Resend permite `AtlasIQ <onboarding@resend.dev>` con el Gmail asociado a la cuenta de Resend como destinatario.
 
 ## Checks
 
 ```bash
-npm test
+pnpm test
 ```
 
 ## Pagos con Stripe
@@ -102,13 +102,6 @@ La suite recorre registro, perfil, viajes y reservas; también revisa accesibili
 
 AtlasIQ incluye imágenes separadas para frontend y API y un `compose.production.yaml` con PostgreSQL privado, healthchecks y reinicio automático. La guía completa de dominio, HTTPS, secretos, copias, métricas, alertas y analítica está en `docs/deployment.md`.
 
-## Roadmap corto
+## Licencia
 
-1. Mejorar el MVP visual en `frontend/`.
-2. Migrar frontend a Angular cuando la interfaz este clara.
-3. Crear backend NestJS con viajes, usuarios, presupuesto e itinerario.
-4. Sustituir el recomendador heuristico por ML cuando haya datos.
-
-## Stack objetivo
-
-Angular, NestJS, PostgreSQL, Redis, Docker, JWT, WebSockets, Google Maps, Weather API, Amadeus API, Cloudinary, Swagger y tests.
+MIT. Consulta `LICENSE`.

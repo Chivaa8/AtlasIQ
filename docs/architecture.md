@@ -1,35 +1,37 @@
 # Arquitectura
 
-AtlasIQ empieza con un MVP estatico para validar producto, interfaz y portfolio sin bloquearse con APIs externas.
+AtlasIQ es una aplicación web de viajes con frontend estático, API Node.js y persistencia PostgreSQL.
 
 ## Capas
 
-- `frontend/`: experiencia de usuario, itinerario, presupuesto, checklist y visualizacion.
-- `backend/`: autenticacion, persistencia, colaboracion y APIs externas.
-- `ml/`: ranking de actividades y optimizacion de itinerario.
-- `infra/`: Docker, variables de entorno, PostgreSQL, Redis y despliegue.
+- `frontend/`: interfaz, rutas, esquemas, servicios y pruebas unitarias.
+- `backend/`: autenticación, viajes, pagos, correo, persistencia y pruebas.
+- `tests/`: recorridos E2E en navegadores reales.
+- `docs/`: operación, arquitectura y calidad.
+- `compose*.yaml`: PostgreSQL local y despliegue de producción.
 
-## Backend previsto
+## Stack actual
 
-- NestJS
+- JavaScript y Node.js
 - PostgreSQL
-- JWT
-- Swagger
-- Tests
+- HTML y CSS nativos
+- Docker y Nginx
+- Playwright y GitHub Actions
 
-Modulos iniciales:
+Módulos principales:
 
 - users
 - trips
-- itinerary
-- budget
-- documents
+- payments
+- reviews
+- favorites
+- password reset
 
-## ML previsto
+## Recomendador
 
-El recomendador actual vive en `frontend/recommendation.js` y usa scoring heuristico.
+El recomendador vive en `frontend/src/services/recommendation.js` y usa puntuación heurística explicable.
 
-Entrada futura:
+Entradas:
 
 - destino
 - presupuesto diario
@@ -39,7 +41,7 @@ Entrada futura:
 - clima
 - distancia entre actividades
 
-Salida futura:
+Salidas:
 
 - ranking de actividades
 - score de ajuste
@@ -47,6 +49,6 @@ Salida futura:
 
 ## Decisiones
 
-- Sin APIs reales hasta cerrar el flujo principal.
-- Sin framework ML hasta tener datos.
-- Documentos y usuarios reales iran en backend, no en localStorage.
+- Sin framework frontend mientras JavaScript nativo cubra el producto.
+- Sin modelo ML hasta disponer de datos suficientes para mejorarlo frente a la heurística.
+- Los datos de cuenta y viajes se guardan en el backend; el almacenamiento local conserva la sesión y preferencias de interfaz.
