@@ -144,6 +144,11 @@ h3 {
   color: #fff;
 }
 
+.tabs button:hover, .link-button:hover {
+  background: #d8e8e3;
+  color: #075b54;
+}
+
 .auth-form, form {
   display: grid;
   gap: 14px;

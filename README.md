@@ -88,6 +88,16 @@ La limitación de frecuencia está en memoria para el desarrollo local. En produ
 
 La recuperación siempre devuelve la misma respuesta exista o no la cuenta. Los códigos se guardan como hash, caducan en 15 minutos y solo se envía uno por minuto. Resend recibe una plantilla HTML y una alternativa de texto. Las claves y códigos nunca deben guardarse en Git.
 
+## Pruebas de navegador
+
+```bash
+pnpm test
+pnpm exec playwright install
+pnpm test:e2e
+```
+
+La suite recorre registro, perfil, viajes y reservas; también revisa accesibilidad, móvil, cabeceras y carga en Chrome, Edge, Firefox y WebKit/Safari. GitHub Actions ejecuta todo automáticamente. La cobertura y los pendientes están en `docs/quality.md`.
+
 ## Roadmap corto
 
 1. Mejorar el MVP visual en `frontend/`.

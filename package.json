@@ -2,6 +2,7 @@
   "name": "atlasiq",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@11.19.0",
   "type": "module",
   "description": "Planificador inteligente de viajes para portfolio.",
   "scripts": {
@@ -11,9 +12,14 @@
     "db:import-json": "node --env-file-if-exists=.env backend/scripts/db.js import-json",
     "db:backup": "node --env-file-if-exists=.env backend/scripts/db.js backup",
     "db:restore": "node --env-file-if-exists=.env backend/scripts/db.js restore",
-    "test": "node frontend/tests/run-tests.js && node backend/tests/password-reset.test.js && node backend/tests/trips.test.js && node backend/tests/auth.test.js && node backend/tests/payments.test.js && node backend/tests/user-data.test.js && node backend/tests/security.test.js && node backend/tests/http.test.js"
+    "test": "node frontend/tests/run-tests.js && node backend/tests/password-reset.test.js && node backend/tests/trips.test.js && node backend/tests/auth.test.js && node backend/tests/payments.test.js && node backend/tests/user-data.test.js && node backend/tests/security.test.js && node backend/tests/http.test.js",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "pg": "^8.23.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.62.1"
   }
 }
