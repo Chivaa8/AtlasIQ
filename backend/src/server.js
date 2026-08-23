@@ -311,7 +311,7 @@ if (isMain) {
 
 async function realSendMail(message) {
   if (!process.env.RESEND_API_KEY || !process.env.EMAIL_FROM) {
-    throw new Error("RESEND_API_KEY and EMAIL_FROM are required for real email sending.");
+    throw new Error("Configura RESEND_API_KEY y EMAIL_FROM en el archivo .env.");
   }
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -327,7 +327,7 @@ async function realSendMail(message) {
       html: message.html
     })
   });
-  if (!response.ok) throw new Error("Email provider rejected the password reset email.");
+  if (!response.ok) throw new Error("Resend rechazó el correo. Revisa EMAIL_FROM y el destinatario permitido.");
 }
 
 function json(response, status, payload) {

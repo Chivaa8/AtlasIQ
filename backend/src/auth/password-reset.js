@@ -19,6 +19,10 @@ export async function createPasswordReset({ email, sendMail, now = Date.now }) {
     expiresAt: now() + 15 * 60 * 1000,
     lastSentAt: now()
   });
+  resets.set(normalizedEmail, {
+    tokenHash: hashToken(token),
+    expiresAt: now() + 15 * 60 * 1000
+  });
   return { ok: true };
 }
 
