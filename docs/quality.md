@@ -32,8 +32,6 @@ Para publicar todavía hay que escoger proveedor y dominio, cargar los secretos 
 
 ## Pendientes funcionales posteriores
 
-- Panel de administración, roles, bloqueo de usuarios y moderación de reseñas.
-- Exportación y eliminación de cuenta y datos personales.
 - Dominio de correo real para enviar recuperación y verificación a cualquier usuario.
 - Soporte y gestión interna de incidencias, cancelaciones y disputas.
 - Revisión profesional de privacidad, cookies, condiciones y seguros antes de operar comercialmente.

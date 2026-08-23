@@ -20,7 +20,8 @@ export function createServer({
   plannedPaymentStore,
   sendMail = realSendMail,
   stripeOptions,
-  authSecret = process.env.AUTH_SECRET
+  authSecret = process.env.AUTH_SECRET,
+  authRateLimit = 5
 } = {}) {
   const metrics = { requests: 0, errors: 0, startedAt: Date.now() };
   const defaults = defaultStores();
@@ -36,7 +37,7 @@ export function createServer({
   const reviews = createUserDataService(reviewStore, reviewInput);
   const favorites = createUserDataService(favoriteStore, favoriteInput);
   const plannedPayments = createUserDataService(plannedPaymentStore, plannedPaymentInput);
-  const authLimited = createRateLimiter({ limit: 5 });
+  const authLimited = createRateLimiter({ limit: authRateLimit });
   const abuseLimited = createRateLimiter({ limit: 20, windowMs: 60 * 60 * 1000 });
 
   return http.createServer((request, response) => {
@@ -143,6 +144,32 @@ export function createServer({
     if (request.method === "PATCH" && url.pathname === "/api/auth/me/preferences") {
       const body = await readJson(request);
       return action(response, () => auth.updatePreferences(bearerToken(request), body));
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/account/export") {
+      return action(response, async () => {
+        const user = await auth.me(bearerToken(request));
+        return {
+          exportedAt: new Date().toISOString(),
+          user,
+          trips: (await tripStore.read()).filter((item) => item.userEmail === user.email),
+          payments: (await paymentStore.read()).filter((item) => item.userEmail === user.email),
+          reviews: (await reviewStore.read()).filter((item) => item.userEmail === user.email),
+          favorites: (await favoriteStore.read()).filter((item) => item.userEmail === user.email),
+          plannedPayments: (await plannedPaymentStore.read()).filter((item) => item.userEmail === user.email)
+        };
+      });
+    }
+
+    if (request.method === "DELETE" && url.pathname === "/api/account") {
+      return action(response, async () => {
+        const user = await auth.me(bearerToken(request));
+        for (const store of [tripStore, paymentStore, reviewStore, favoriteStore, plannedPaymentStore]) {
+          await store.write((await store.read()).filter((item) => item.userEmail !== user.email));
+        }
+        await userStore.write((await userStore.read()).filter((item) => item.id !== user.id));
+        return { removed: true };
+      });
     }
 
     if (request.method === "GET" && url.pathname === "/api/reviews") {

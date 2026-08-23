@@ -1,4 +1,4 @@
-process.env.ADMIN_EMAILS = "admin-e2e@atlasiq.local";
+process.env.ADMIN_EMAILS = ["chrome", "edge", "firefox", "safari-webkit"].map((name) => `admin-${name}@atlasiq.local`).join(",");
 const { startTestApi } = await import("../../backend/scripts/test-server.js");
 import { startStaticServer } from "../static-server.js";
 

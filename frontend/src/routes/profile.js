@@ -1,9 +1,11 @@
 import { $ } from "../app/dom.js";
-import { currentUser } from "../app/storage.js";
+import { currentUser, endSession } from "../app/storage.js";
 import { showPage } from "../app/pages.js";
 import { currencies } from "../schemas/profile.js";
 import { labels } from "../schemas/user.js";
 import { saveProfile } from "../services/profile.js";
+import { deleteAccount, exportAccount } from "../services/account-api.js";
+import { showApp } from "./auth.js";
 import { renderRecommendations } from "./advisor.js";
 import { renderTrips } from "./trips.js";
 import { confirmAction, notify, withLoading } from "../app/ui.js";
@@ -13,6 +15,30 @@ export function mountProfileRoute() {
   $("#profilePhoto").addEventListener("change", previewPhoto);
   $("#personalDocumentFile").addEventListener("change", addPersonalDocument);
   $("#personalDocumentList").addEventListener("click", removePersonalDocument);
+  $("#exportAccountBtn").addEventListener("click", downloadAccount);
+  $("#deleteAccountBtn").addEventListener("click", removeAccount);
+}
+
+async function downloadAccount(event) {
+  const data = await withLoading(event.currentTarget, "Preparando...", exportAccount);
+  if (data.error) return showProfileMessage(data.error);
+  const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `atlasiq-datos-${new Date().toISOString().slice(0, 10)}.json`;
+  link.click();
+  URL.revokeObjectURL(url);
+  notify("Copia de datos descargada.");
+}
+
+async function removeAccount(event) {
+  if (!confirmAction("¿Eliminar definitivamente tu cuenta, viajes, pagos, reseñas y documentos?")) return;
+  if (window.prompt('Escribe ELIMINAR para confirmar') !== "ELIMINAR") return notify("Eliminación cancelada.", "error");
+  const result = await withLoading(event.currentTarget, "Eliminando...", deleteAccount);
+  if (result.error) return showProfileMessage(result.error);
+  endSession();
+  showApp();
+  notify("Cuenta eliminada.");
 }
 
 export function renderProfile() {

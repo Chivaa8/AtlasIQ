@@ -48,6 +48,14 @@ try {
 
   const rejected = await request("GET", "/api/trips");
   assert.equal(rejected.error, "invalid token");
+
+  const exported = await request("GET", "/api/account/export", null, registered.token);
+  assert.equal(exported.user.email, "oriol@example.com");
+  assert.equal(exported.user.passwordHash, undefined);
+  assert.equal(exported.trips.length, 1);
+
+  assert.equal((await request("DELETE", "/api/account", null, registered.token)).removed, true);
+  assert.equal((await request("GET", "/api/auth/me", null, registered.token)).error, "invalid token");
 } finally {
   await new Promise((resolve) => server.close(resolve));
 }
