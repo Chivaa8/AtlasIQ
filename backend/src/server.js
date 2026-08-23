@@ -149,6 +149,25 @@ export function createServer({
       return action(response, () => reviews.list());
     }
 
+    if (request.method === "GET" && url.pathname === "/api/admin/users") {
+      return action(response, () => auth.adminUsers(bearerToken(request)));
+    }
+
+    const adminUserMatch = url.pathname.match(/^\/api\/admin\/users\/([^/]+)$/);
+    if (request.method === "PATCH" && adminUserMatch) {
+      const body = await readJson(request);
+      return action(response, () => auth.adminSetBlocked(bearerToken(request), adminUserMatch[1], body.blocked));
+    }
+
+    const adminReviewMatch = url.pathname.match(/^\/api\/admin\/reviews\/([^/]+)$/);
+    if (request.method === "DELETE" && adminReviewMatch) {
+      return action(response, async () => {
+        const user = await auth.me(bearerToken(request));
+        if (user.role !== "admin") throw new Error("admin required");
+        return reviews.removeAny(adminReviewMatch[1]);
+      });
+    }
+
     if (request.method === "POST" && url.pathname === "/api/reviews") {
       const body = await readJson(request);
       if (abuseLimited(`review:${clientIp(request)}`)) return json(response, 429, { error: "too many attempts" });

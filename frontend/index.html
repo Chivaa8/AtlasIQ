@@ -101,6 +101,7 @@
             <button class="link-button" type="button" data-page-target="paymentsPanel">Pagos</button>
             <button class="link-button" type="button" data-page-target="toolsPanel">Herramientas</button>
             <button class="link-button" type="button" data-page-target="bookingsPanel">Reservas</button>
+            <button id="adminNav" class="link-button hidden" type="button" data-page-target="adminPanel">Administración</button>
           </nav>
           <div class="topbar-actions">
             <details class="account-menu">
@@ -645,6 +646,15 @@
             <button type="submit">Guardar perfil</button>
             <p id="profileMessage" class="message" aria-live="polite"></p>
           </form>
+        </section>
+
+        <section id="adminPanel" class="app-page hidden">
+          <div class="panel-head"><div><p class="eyebrow">Administración</p><h2>Usuarios y moderación</h2></div><strong id="adminSummary"></strong></div>
+          <div class="admin-grid">
+            <section class="payment-card"><h3>Usuarios</h3><div id="adminUsers"></div></section>
+            <section class="payment-card"><h3>Reseñas publicadas</h3><div id="adminReviews"></div></section>
+          </div>
+          <p id="adminMessage" class="message" aria-live="polite"></p>
         </section>
 
         <section id="advisor" class="advisor app-page hidden">

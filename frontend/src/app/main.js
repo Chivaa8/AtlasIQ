@@ -9,6 +9,7 @@ import { mountPaymentsRoute } from "../routes/payments.js?v=20260820-ux2";
 import { mountToolsRoute } from "../routes/tools.js";
 import { mountBookingsRoute } from "../routes/bookings.js?v=20260820-ux2";
 import { mountLegal } from "./legal.js";
+import { mountAdminRoute } from "../routes/admin.js";
 import { mountUi, notify } from "./ui.js?v=20260820-ux2";
 
 mountUi();
@@ -23,6 +24,7 @@ mountPaymentsRoute();
 mountToolsRoute();
 mountBookingsRoute();
 mountLegal();
+mountAdminRoute();
 showApp();
 showCheckoutResult();
 

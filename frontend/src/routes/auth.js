@@ -40,6 +40,7 @@ export function showApp() {
   $("#accountEmail").textContent = user.email || "";
   $("#accountAvatar").src = user.photo || defaultAvatar();
   $("#verifyEmailBtn").classList.toggle("hidden", user.emailVerified !== false);
+  $("#adminNav").classList.toggle("hidden", user.role !== "admin");
   renderProfile();
   const needsProfile = !isProfileComplete(user);
   $("#appView").classList.toggle("onboarding", needsProfile);

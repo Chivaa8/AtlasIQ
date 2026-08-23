@@ -12,6 +12,7 @@ const memoryStore = {
 };
 
 const auth = createAuthService(memoryStore, "test-secret-that-is-longer-than-32-characters");
+process.env.ADMIN_EMAILS = "oriol@example.com";
 const registered = await auth.register({
   name: "Oriol",
   email: "ORIOL@example.com",
@@ -78,5 +79,15 @@ await assert.rejects(
   () => expiringAuth.me(expired.token),
   /token expired/
 );
+
+const regular = await auth.register({ name: "Ana", email: "ana@example.com", password: "Secret123", origin: "europe" });
+await assert.rejects(() => auth.adminUsers(regular.token), /admin required/);
+const adminSession = await auth.login({ email: "oriol@example.com", password: "Newsecret1" });
+assert.equal(adminSession.user.role, "admin");
+assert.equal((await auth.adminUsers(adminSession.token)).length, 2);
+await auth.adminSetBlocked(adminSession.token, regular.user.id, true);
+await assert.rejects(() => auth.me(regular.token), /invalid token/);
+await assert.rejects(() => auth.login({ email: "ana@example.com", password: "Secret123" }), /account blocked/);
+await assert.rejects(() => auth.adminSetBlocked(adminSession.token, adminSession.user.id, true), /cannot block itself/);
 
 console.log("AtlasIQ backend auth check passed");

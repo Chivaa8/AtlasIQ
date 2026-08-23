@@ -22,6 +22,12 @@ export function createUserDataService(store, normalize = object) {
       if (!items.some((item) => item.id === id && item.userEmail === userEmail)) throw new Error("item not found");
       await store.write(items.filter((item) => item.id !== id || item.userEmail !== userEmail));
       return { removed: true };
+    },
+    async removeAny(id) {
+      const items = await store.read();
+      if (!items.some((item) => item.id === id)) throw new Error("item not found");
+      await store.write(items.filter((item) => item.id !== id));
+      return { removed: true };
     }
   };
 }

@@ -1,4 +1,5 @@
-import { startTestApi } from "../../backend/scripts/test-server.js";
+process.env.ADMIN_EMAILS = "admin-e2e@atlasiq.local";
+const { startTestApi } = await import("../../backend/scripts/test-server.js");
 import { startStaticServer } from "../static-server.js";
 
 export default async function setup() {

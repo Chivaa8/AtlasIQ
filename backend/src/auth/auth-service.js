@@ -31,6 +31,7 @@ export function createAuthService(store, secret = process.env.AUTH_SECRET, token
       const email = String(input.email || "").trim().toLowerCase();
       const user = (await store.read()).find((item) => item.email === email);
       if (!user || !verifyPassword(input.password, user.passwordHash)) throw new Error("invalid credentials");
+      if (user.blocked) throw new Error("account blocked");
       return session(user, secret, tokenTtlMs);
     },
     async me(token) {
@@ -92,6 +93,20 @@ export function createAuthService(store, secret = process.env.AUTH_SECRET, token
       if (index === -1) return;
       users[index] = { ...users[index], passwordHash: hashPassword(password), sessionVersion: Number(users[index].sessionVersion || 0) + 1, updatedAt: new Date().toISOString() };
       await store.write(users);
+    },
+    async adminUsers(token) {
+      await requireAdmin(store, token, secret);
+      return (await store.read()).map(publicUser);
+    },
+    async adminSetBlocked(token, userId, blocked) {
+      const admin = await requireAdmin(store, token, secret);
+      if (admin.id === userId) throw new Error("admin cannot block itself");
+      const users = await store.read();
+      const index = users.findIndex((user) => user.id === userId);
+      if (index === -1) throw new Error("user not found");
+      users[index] = { ...users[index], blocked: Boolean(blocked), sessionVersion: Number(users[index].sessionVersion || 0) + 1, updatedAt: new Date().toISOString() };
+      await store.write(users);
+      return publicUser(users[index]);
     }
   };
 }
@@ -180,14 +195,24 @@ function session(user, secret, tokenTtlMs = defaultTokenTtlMs) {
 
 function publicUser(user) {
   const { passwordHash, emailVerificationHash, emailVerificationExpiresAt, sessionVersion, ...safeUser } = user;
-  return { ...safeUser, emailVerified: user.emailVerified !== false };
+  return { ...safeUser, role: isAdminEmail(user.email) ? "admin" : "user", emailVerified: user.emailVerified !== false };
 }
 
 async function authenticatedUser(store, token, secret) {
   const payload = verifyToken(token, secret);
   const user = (await store.read()).find((item) => item.id === payload.sub);
-  if (!user || Number(user.sessionVersion || 0) !== Number(payload.ver || 0)) throw new Error("invalid token");
+  if (!user || user.blocked || Number(user.sessionVersion || 0) !== Number(payload.ver || 0)) throw new Error("invalid token");
   return user;
+}
+
+async function requireAdmin(store, token, secret) {
+  const user = await authenticatedUser(store, token, secret);
+  if (!isAdminEmail(user.email)) throw new Error("admin required");
+  return user;
+}
+
+function isAdminEmail(email) {
+  return String(process.env.ADMIN_EMAILS || "").split(",").map((value) => value.trim().toLowerCase()).filter(Boolean).includes(String(email || "").toLowerCase());
 }
 
 function hashVerification(code) {

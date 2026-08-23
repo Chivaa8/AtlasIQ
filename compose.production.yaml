@@ -24,6 +24,7 @@ services:
     restart: unless-stopped
     environment:
       AUTH_SECRET: ${AUTH_SECRET:?Configura AUTH_SECRET}
+      ADMIN_EMAILS: ${ADMIN_EMAILS:?Configura ADMIN_EMAILS}
       APP_URL: ${APP_URL:?Configura APP_URL}
       DATABASE_URL: postgresql://${POSTGRES_USER:-atlasiq}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-atlasiq}
       RESEND_API_KEY: ${RESEND_API_KEY:-}

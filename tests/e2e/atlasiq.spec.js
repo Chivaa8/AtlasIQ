@@ -49,6 +49,24 @@ test("recuperación y accesibilidad", async ({ page }) => {
   expect(results.violations).toEqual([]);
 });
 
+test("panel de administración protegido", async ({ page }) => {
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await page.getByRole("button", { name: "Crear usuario" }).click();
+  await page.locator("#registerForm").getByLabel("Nombre").fill("Admin E2E");
+  await page.locator("#registerForm").getByLabel("Email").fill("admin-e2e@atlasiq.local");
+  await page.locator("#registerForm").getByLabel("Contraseña").fill("Segura123");
+  await page.getByRole("button", { name: "Crear cuenta" }).click();
+  const profile = page.locator("#profileForm");
+  await profile.getByLabel("Primer apellido").fill("Pruebas");
+  await profile.getByLabel("DNI o pasaporte").fill("ADMIN123");
+  await profile.getByLabel("Número de teléfono").fill("+34600000001");
+  await profile.getByRole("button", { name: "Guardar perfil" }).click();
+  await expect(page.getByRole("button", { name: "Administración" })).toBeVisible();
+  await page.getByRole("button", { name: "Administración" }).click();
+  await expect(page.getByRole("heading", { name: "Usuarios y moderación" })).toBeVisible();
+  await expect(page.locator("#adminUsers")).toContainText("admin-e2e@atlasiq.local");
+});
+
 test("cabeceras de seguridad y presupuesto de carga", async ({ page, request }) => {
   const started = Date.now();
   const response = await page.goto("/", { waitUntil: "domcontentloaded" });
