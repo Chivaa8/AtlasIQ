@@ -18,12 +18,16 @@ const trip = await trips.create("user@example.com", {
   continent: "asia",
   estimatedCost: 1550,
   currency: "JPY",
-  weather: { average: "10-30 °C" }
+  weather: { average: "10-30 °C" },
+  health: { level: "Consulta recomendada" },
+  days: 10
 });
 
 assert.equal(trip.userEmail, "user@example.com");
 assert.equal(trip.currency, "JPY");
 assert.equal(trip.weather.average, "10-30 °C");
+assert.equal(trip.health.level, "Consulta recomendada");
+assert.equal(trip.days, 10);
 assert.equal((await trips.list("other@example.com")).length, 0);
 
 const withExpense = await trips.addExpense("user@example.com", trip.id, { concept: "Hotel", amount: 300 });

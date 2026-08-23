@@ -16,6 +16,8 @@ assert.ok(shortEuropeanTrip.length > 0);
 assert.ok(["europe", "africa"].includes(shortEuropeanTrip[0].continent));
 assert.ok(shortEuropeanTrip[0].estimatedCost <= 900 || shortEuropeanTrip[0].score < 100);
 assert.ok(shortEuropeanTrip.every((destination) => destination.flightPlan?.label && destination.mobilityPlan?.label));
+assert.ok(shortEuropeanTrip.every((destination) => destination.days === 5 && destination.health?.url));
+assert.ok(shortEuropeanTrip.length <= 8);
 
 const asianTrip = recommendDestinations({
   goal: "templos comida y ciudad",

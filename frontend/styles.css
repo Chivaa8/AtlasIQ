@@ -1278,6 +1278,13 @@ dd {
   margin-top: 16px;
 }
 
+.health-list { margin: 10px 0; padding-left: 20px; }
+.health-list li { margin: 5px 0; }
+.day-plan { display: grid; gap: 8px; margin: 12px 0 0; }
+.day-plan div { display: grid; grid-template-columns: 70px 1fr; gap: 10px; }
+.day-plan dt { font-weight: 700; color: var(--brand); }
+.day-plan dd { margin: 0; }
+
 .travel-tool {
   display: grid;
   gap: 8px;

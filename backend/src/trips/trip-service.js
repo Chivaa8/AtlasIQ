@@ -24,6 +24,8 @@ export function createTripService(store) {
         currency: destination.currency || "EUR",
         visa: destination.visa || null,
         weather: destination.weather || null,
+        health: destination.health || null,
+        days: Math.min(45, Math.max(1, Number(destination.days || destination.minDays || 3))),
         highlights: destination.highlights || [],
         checklist: defaultChecklist.map((item) => ({ ...item })),
         documents: [],

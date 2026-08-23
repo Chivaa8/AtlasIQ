@@ -333,6 +333,21 @@
                   </dl>
                   <p id="drivingNote" class="muted"></p>
                 </section>
+                <section class="travel-tool">
+                  <h3>Salud y vacunas</h3>
+                  <strong id="healthLevel"></strong>
+                  <ul id="healthVaccines" class="health-list"></ul>
+                  <p id="healthAdvice"></p>
+                  <a id="healthLink" target="_blank" rel="noreferrer">Consultar Sanidad Exterior</a>
+                  <p class="muted">Orientación general: la recomendación depende de ruta, duración, salud y actividades.</p>
+                </section>
+                <section class="travel-tool">
+                  <h3>Seguro recomendado</h3>
+                  <strong id="insuranceLevel"></strong>
+                  <ul id="insuranceCoverages" class="health-list"></ul>
+                  <p id="insuranceAdvice"></p>
+                  <button type="button" data-page-target="bookingsPanel">Comparar seguros</button>
+                </section>
               </div>
             </div>
             <ol id="tripItinerary" class="itinerary-list"></ol>
@@ -500,7 +515,7 @@
             <article class="payment-card">
               <h3>Método principal</h3>
               <p>Tarjeta personal terminada en ****</p>
-              <button type="button" disabled title="Disponible al conectar un proveedor de pagos">Próximamente</button>
+              <button type="button" data-page-target="bookingsPanel">Elegir servicio y pagar</button>
             </article>
             <article class="payment-card">
               <h3>Próximos pagos</h3>

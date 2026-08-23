@@ -66,6 +66,11 @@ export function showTripDetail(id) {
     <li>
       <strong>${item.title}</strong>
       <p>${item.plan}</p>
+      <dl class="day-plan">
+        <div><dt>Mañana</dt><dd>${item.morning}</dd></div>
+        <div><dt>Tarde</dt><dd>${item.afternoon}</dd></div>
+        <div><dt>Noche</dt><dd>${item.evening}</dd></div>
+      </dl>
     </li>
   `).join("");
   $("#tripChecklist").innerHTML = trip.checklist.map((item) => `
@@ -78,7 +83,40 @@ export function showTripDetail(id) {
   renderExpenses(trip);
   renderTravelTools(trip);
   renderDrivingRules(trip.driving);
+  renderHealth(trip.health);
+  renderInsurance(trip);
   showPage("tripDetail");
+}
+
+function renderHealth(health = {}) {
+  $("#healthLevel").textContent = health.level || "Consulta según destino";
+  $("#healthVaccines").innerHTML = (health.vaccines || ["Calendario vacunal habitual al día"]).map((item) => `<li>${item}</li>`).join("");
+  $("#healthAdvice").textContent = health.advice || "Pide consejo personalizado antes del viaje.";
+  $("#healthLink").href = health.url || "https://www.sanidad.gob.es/areas/sanidadExterior/laSaludTambienViaja/centrosVacunacionInternacional/";
+}
+
+export function insuranceForTrip(trip) {
+  const highMedicalCost = ["america", "oceania"].includes(trip.continent);
+  const adventure = (trip.highlights || []).some((item) => /montaña|trek|surf|buceo|safari|esquí|glaciar/i.test(item));
+  const coverages = [
+    `Asistencia médica de al menos ${highMedicalCost ? "1.000.000 €" : "500.000 €"}`,
+    "Repatriación y regreso anticipado",
+    "Equipaje, demoras y responsabilidad civil",
+    ...(adventure ? ["Deportes y actividades de aventura incluidos"] : []),
+    ...(Number(trip.estimatedCost) >= 1500 ? ["Cancelación por el importe total reservado"] : [])
+  ];
+  return {
+    level: highMedicalCost || adventure ? "Cobertura completa recomendada" : "Cobertura esencial recomendada",
+    coverages,
+    advice: trip.continent === "europe" ? "La Tarjeta Sanitaria Europea no sustituye un seguro de viaje ni cubre repatriación." : "Comprueba franquicias, exclusiones, preexistencias y límites por actividad antes de contratar."
+  };
+}
+
+function renderInsurance(trip) {
+  const insurance = insuranceForTrip(trip);
+  $("#insuranceLevel").textContent = insurance.level;
+  $("#insuranceCoverages").innerHTML = insurance.coverages.map((item) => `<li>${item}</li>`).join("");
+  $("#insuranceAdvice").textContent = insurance.advice;
 }
 
 function renderTravelTools(trip) {

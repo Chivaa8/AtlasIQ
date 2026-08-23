@@ -25,6 +25,10 @@ test("registro, perfil, viaje y reserva guardada", async ({ page }) => {
   await page.locator("[data-create-trip]").first().click();
   await expect(page.getByRole("heading", { name: "Mis viajes" })).toBeVisible();
   await expect(page.locator(".trip-card")).toHaveCount(1);
+  await page.locator("[data-trip-id]").click();
+  await expect(page.locator("#tripItinerary > li")).toHaveCount(5);
+  await expect(page.getByRole("heading", { name: "Salud y vacunas" })).toBeVisible();
+  await page.getByRole("button", { name: "Volver" }).click();
 
   await page.getByRole("button", { name: "Menú" }).click();
   await page.getByRole("button", { name: "Reservas" }).click();
@@ -32,6 +36,9 @@ test("registro, perfil, viaje y reserva guardada", async ({ page }) => {
   await expect(page.locator(".booking-card")).toHaveCount(3);
   await page.locator("[data-save-offer]").first().click();
   await expect(page.locator("#savedOfferCount")).toHaveText("1");
+  await page.locator("#bookingFilters").getByLabel("Tipo").selectOption("insurance");
+  await expect(page.locator(".booking-card")).toHaveCount(4);
+  await expect(page.locator("button:disabled")).toHaveCount(0);
 });
 
 test("recuperación y accesibilidad", async ({ page }) => {

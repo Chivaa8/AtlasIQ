@@ -10,6 +10,25 @@ const defaultWeather = {
   bestMonths: "Depende de la zona y del tipo de viaje"
 };
 
+const healthOfficialUrl = "https://www.sanidad.gob.es/areas/sanidadExterior/laSaludTambienViaja/centrosVacunacionInternacional/";
+const healthByContinent = {
+  europe: { level: "Rutina", vaccines: ["Calendario vacunal habitual al día"], advice: "Para viajes urbanos normales no suele haber vacunas específicas; revisa la Tarjeta Sanitaria Europea y tu cobertura.", url: healthOfficialUrl },
+  america: { level: "Consulta según zona", vaccines: ["Calendario habitual", "Hepatitis A según país", "Fiebre amarilla en zonas de riesgo"], advice: "El riesgo cambia mucho entre Norteamérica, Caribe, Andes y Amazonia. Consulta según ruta, escalas y actividades.", url: healthOfficialUrl },
+  asia: { level: "Consulta recomendada", vaccines: ["Calendario habitual", "Hepatitis A", "Fiebre tifoidea según estancia"], advice: "Valora consulta sanitaria 4–8 semanas antes, especialmente para zonas rurales, estancias largas o viajes de aventura.", url: healthOfficialUrl },
+  africa: { level: "Consulta prioritaria", vaccines: ["Calendario habitual", "Hepatitis A", "Fiebre amarilla según país y ruta"], advice: "Pueden existir requisitos de entrada y prevención de malaria. Pide valoración personalizada en un Centro de Vacunación Internacional.", url: healthOfficialUrl },
+  oceania: { level: "Rutina", vaccines: ["Calendario vacunal habitual al día"], advice: "Australia y Nueva Zelanda suelen requerir solo vacunas habituales; las islas del Pacífico pueden necesitar una valoración distinta.", url: healthOfficialUrl }
+};
+
+const healthOverrides = {
+  "Arabia Saudí": { level: "Requisitos especiales", vaccines: ["Calendario habitual", "Meningococo ACWY para Hajj o Umrah"], advice: "Los requisitos dependen del motivo y procedencia. Confirma la documentación sanitaria antes de reservar.", url: healthOfficialUrl },
+  "Brasil": { level: "Consulta prioritaria", vaccines: ["Calendario habitual", "Hepatitis A", "Fiebre amarilla según región"], advice: "La recomendación cambia entre ciudades, costa, Amazonia y zonas de tránsito.", url: healthOfficialUrl },
+  "Colombia": { level: "Consulta prioritaria", vaccines: ["Calendario habitual", "Hepatitis A", "Fiebre amarilla según región"], advice: "Consulta la ruta exacta, altitud y exposición a mosquitos.", url: healthOfficialUrl },
+  "Perú": { level: "Consulta prioritaria", vaccines: ["Calendario habitual", "Hepatitis A", "Fiebre amarilla para zonas de riesgo"], advice: "Lima, Andes y Amazonia tienen riesgos diferentes; añade consejo sobre altitud si visitas zonas elevadas.", url: healthOfficialUrl },
+  "India": { level: "Consulta prioritaria", vaccines: ["Calendario habitual", "Hepatitis A", "Fiebre tifoidea", "Rabia según actividades"], advice: "La duración, entorno rural, animales y condiciones de alojamiento cambian la recomendación.", url: healthOfficialUrl },
+  "Tailandia": { level: "Consulta recomendada", vaccines: ["Calendario habitual", "Hepatitis A", "Fiebre tifoidea según ruta"], advice: "Consulta si visitarás zonas rurales, selva o realizarás una estancia prolongada.", url: healthOfficialUrl },
+  "Vietnam": { level: "Consulta recomendada", vaccines: ["Calendario habitual", "Hepatitis A", "Fiebre tifoidea según ruta"], advice: "Valora riesgos por alimentos, mosquitos y zonas rurales con un profesional.", url: healthOfficialUrl }
+};
+
 const drivingByContinent = {
   europe: { side: "Derecha", car: "Carné B válido en la UE; fuera de la UE revisa permiso internacional.", moto: "Permiso A/A2 según cilindrada.", note: "Respeta zonas ambientales, peajes y límites urbanos." },
   asia: { side: "Variable", car: "Suele exigirse permiso internacional junto al carné nacional.", moto: "Moto solo con permiso válido e internacional; cuidado con seguros y cilindrada.", note: "Tráfico denso en grandes ciudades; revisa normas locales antes de alquilar." },
@@ -44,6 +63,7 @@ function destination(name, city, continent, landscape, environment, vibe, minDay
     currency,
     weather: extra.weather || defaultWeather,
     visa: extra.visa || defaultVisa,
+    health: extra.health || healthOverrides[name] || healthByContinent[continent],
     driving: extra.driving || drivingRules(name, continent),
     highlights
   };
@@ -122,6 +142,21 @@ export const destinations = [
   destination("Colombia", "Bogotá, Medellín y Cartagena", "america", ["beach", "mountain"], ["city", "countryside"], ["culture", "party"], 8, 90, "COP", ["café", "caribe", "música", "ciudades"]),
   destination("Perú", "Lima, Cusco y Machu Picchu", "america", ["mountain"], ["city", "countryside"], ["culture"], 8, 85, "PEN", ["andes", "ruinas", "gastronomía", "senderismo"]),
   destination("Chile", "Santiago, Atacama y Patagonia", "america", ["mountain", "beach"], ["city", "countryside"], ["culture"], 9, 120, "CLP", ["desierto", "patagonia", "vino", "lagos"])
+  ,destination("Islandia", "Reikiavik, Círculo Dorado y costa sur", "europe", ["mountain", "beach"], ["city", "countryside"], ["culture"], 6, 210, "ISK", ["cascadas", "glaciares", "géiseres", "auroras"])
+  ,destination("Finlandia", "Helsinki, Laponia y región de los lagos", "europe", ["mountain", "beach"], ["city", "countryside"], ["culture"], 6, 170, "EUR", ["saunas", "lagos", "auroras", "bosques"])
+  ,destination("Maldivas", "Malé y atolones", "asia", ["beach"], ["countryside"], ["culture"], 6, 230, "MVR", ["arrecifes", "buceo", "playas", "atolones"])
+  ,destination("Sri Lanka", "Colombo, Kandy, Ella y costa sur", "asia", ["beach", "mountain"], ["city", "countryside"], ["culture"], 9, 75, "LKR", ["templos", "trenes", "safaris", "playas"])
+  ,destination("Nepal", "Katmandú, Pokhara y Himalaya", "asia", ["mountain"], ["city", "countryside"], ["culture"], 9, 65, "NPR", ["trekking", "templos", "himalaya", "lagos"])
+  ,destination("Jordania", "Amán, Petra y Wadi Rum", "asia", ["mountain", "beach"], ["city", "countryside"], ["culture"], 6, 105, "JOD", ["petra", "desierto", "mar muerto", "ruinas"])
+  ,destination("Costa Rica", "San José, Arenal y Pacífico", "america", ["beach", "mountain"], ["city", "countryside"], ["culture"], 8, 130, "CRC", ["volcanes", "selva", "fauna", "surf"])
+  ,destination("Panamá", "Ciudad de Panamá, Bocas del Toro y Boquete", "america", ["beach", "mountain"], ["city", "countryside"], ["culture", "party"], 7, 115, "PAB", ["canal", "islas", "selva", "skyline"])
+  ,destination("Ecuador", "Quito, Andes y Galápagos", "america", ["beach", "mountain"], ["city", "countryside"], ["culture"], 8, 105, "USD", ["galápagos", "volcanes", "mercados", "selva"])
+  ,destination("Cuba", "La Habana, Viñales y Varadero", "america", ["beach", "mountain"], ["city", "countryside"], ["culture", "party"], 7, 90, "CUP", ["música", "playas", "coches clásicos", "arquitectura"])
+  ,destination("Kenia", "Nairobi, Masái Mara y costa", "africa", ["beach", "mountain"], ["city", "countryside"], ["culture"], 8, 140, "KES", ["safari", "sabana", "fauna", "playas"])
+  ,destination("Tanzania", "Serengeti, Ngorongoro y Zanzíbar", "africa", ["beach", "mountain"], ["countryside", "city"], ["culture"], 9, 150, "TZS", ["safari", "kilimanjaro", "zanzíbar", "fauna"])
+  ,destination("Mauricio", "Port Louis, Le Morne y costa este", "africa", ["beach", "mountain"], ["city", "countryside"], ["culture"], 7, 145, "MUR", ["lagunas", "senderismo", "arrecifes", "gastronomía"])
+  ,destination("Uruguay", "Montevideo, Colonia y Punta del Este", "america", ["beach"], ["city", "countryside"], ["culture", "party"], 6, 125, "UYU", ["costa", "tango", "vino", "barrios históricos"])
+  ,destination("Guatemala", "Antigua, Atitlán y Tikal", "america", ["mountain", "beach"], ["city", "countryside"], ["culture"], 8, 80, "GTQ", ["volcanes", "ruinas mayas", "lagos", "mercados"])
 ];
 
 export const proximity = {

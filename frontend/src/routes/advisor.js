@@ -63,6 +63,13 @@ const destinationImages = {
 };
 
 const spanishRegionImage = "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?auto=format&fit=crop&w=900&q=80";
+const continentImages = {
+  europe: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=900&q=80",
+  asia: "https://images.unsplash.com/photo-1528181304800-259b08848526?auto=format&fit=crop&w=900&q=80",
+  america: "https://images.unsplash.com/photo-1503614472-8c93d56e92ce?auto=format&fit=crop&w=900&q=80",
+  africa: "https://images.unsplash.com/photo-1484318571209-661cf29a69fe?auto=format&fit=crop&w=900&q=80",
+  oceania: "https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?auto=format&fit=crop&w=900&q=80"
+};
 
 export function mountAdvisorRoute() {
   const form = $("#tripForm");
@@ -115,7 +122,7 @@ function cardTemplate(destination) {
   const flight = destination.flightPlan || { label: "Vuelo por confirmar", detail: "AtlasIQ ajustará la ruta cuando tengamos fechas y aeropuerto de salida." };
   const mobility = destination.mobilityPlan || { label: "Movilidad por confirmar", detail: "Podrás elegir transporte público, coche, moto o excursiones al crear el viaje." };
   const payload = encodeURIComponent(JSON.stringify(destination));
-  const image = destinationImages[destination.name] || destinationImages[destination.country] || spanishRegionImage;
+  const image = destinationImages[destination.name] || destinationImages[destination.country] || continentImages[destination.continent] || spanishRegionImage;
 
   return `
     <article class="destination-card">

@@ -15,6 +15,8 @@ const offers = [
   { id: "hotel-tokyo", type: "hotel", destination: "Tokio", title: "Shinjuku City Stay", detail: "3 estrellas · metro cercano · cancelación flexible", price: 110, unit: "noche", rating: 4.5 },
   { id: "insurance-basic", type: "insurance", destination: "Mundial", title: "Seguro Esencial", detail: "Asistencia médica 100.000 € · equipaje · repatriación", price: 29, unit: "viaje", rating: 4.5 },
   { id: "insurance-plus", type: "insurance", destination: "Mundial", title: "Seguro Completo", detail: "Asistencia médica 500.000 € · cancelación · deportes", price: 59, unit: "viaje", rating: 4.8 },
+  { id: "insurance-premium", type: "insurance", destination: "Mundial", title: "Seguro Premium", detail: "Asistencia médica 1.000.000 € · cancelación amplia · deportes · cruceros", price: 89, unit: "viaje", rating: 4.9 },
+  { id: "insurance-longstay", type: "insurance", destination: "Mundial", title: "Seguro Larga Estancia", detail: "Viajes de 30 a 365 días · telemedicina · repatriación · equipaje", price: 119, unit: "mes", rating: 4.7 },
   { id: "rental-car", type: "rental", destination: "Mundial", title: "Alquiler de coche", detail: "Comparación de vehículos · kilometraje y coberturas según proveedor", price: 45, unit: "día", rating: 4.6 },
   { id: "rental-moto", type: "rental", destination: "Mundial", title: "Alquiler de moto", detail: "Scooter o moto · revisa permiso, casco, franquicia y cilindrada", price: 25, unit: "día", rating: 4.5 },
   { id: "flight-rome", type: "flight", destination: "Roma", title: "Vuelos a Roma", detail: "Compara horarios, escalas, equipaje y condiciones de cambio", price: 120, unit: "persona", rating: 4.6 },
@@ -25,7 +27,7 @@ const offers = [
 ];
 
 const typeLabels = { guide: "Guía local", "free-tour": "Free tour", excursion: "Excursión", hotel: "Hotel", insurance: "Seguro", rental: "Coche o moto", flight: "Vuelo", package: "Vuelo + hotel" };
-const checkoutProducts = new Set(["guide-rome", "guide-tokyo", "guide-marrakech", "excursion-rome", "excursion-bali", "insurance-basic", "insurance-plus"]);
+const checkoutProducts = new Set(["guide-rome", "guide-tokyo", "guide-marrakech", "excursion-rome", "excursion-bali", "insurance-basic", "insurance-plus", "insurance-premium", "insurance-longstay"]);
 let saved = [];
 
 export function mountBookingsRoute() {

@@ -9,13 +9,14 @@ export function recommendDestinations(preferences) {
       ...destination,
       score: scoreDestination(destination, preferences),
       estimatedCost: Math.round(destination.dailyCost * preferences.days),
+      days: preferences.days,
       proximity: proximityLabel(preferences.origin, destination.continent),
       flightPlan: flightPlan(destination, preferences),
       mobilityPlan: mobilityPlan(destination, preferences)
     }))
     .filter((destination) => destination.score > 0)
     .sort((a, b) => b.score - a.score)
-    .slice(0, 4);
+    .slice(0, 8);
 }
 
 function scoreDestination(destination, preferences) {
